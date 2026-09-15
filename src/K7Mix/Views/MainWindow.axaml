@@ -1,0 +1,179 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="using:K7Mix.Views"
+        x:Class="K7Mix.Views.MainWindow"
+        Icon="/Assets/app.ico"
+        Title="K7 Mix"
+        Width="1280"
+        Height="820"
+        MinWidth="900"
+        MinHeight="560"
+        Background="{DynamicResource TkxPage}"
+        WindowStartupLocation="CenterScreen">
+
+  <Border Classes="page">
+    <DockPanel Margin="12">
+      <Border DockPanel.Dock="Top" Classes="section bar" Margin="0,0,0,12">
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+            <TextBlock Classes="title" Text="K7 Mix" VerticalAlignment="Center" />
+            <TextBlock Classes="caption" Text="Cassette mixes" VerticalAlignment="Center" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+            <Button Classes="pill lime" Content="New" Click="OnNewClick" />
+            <Button Classes="pill amber" Content="Import Markdown" Click="OnImportClick" />
+            <Button Classes="pill amber" Content="Open" Click="OnOpenClick" />
+            <Button Classes="pill lime" Content="Save" Click="OnSaveClick" />
+            <Button Classes="pill green" Content="Save locked copy" Click="OnSaveLockedClick" />
+            <Button Classes="pill pink" Content="Print insert" Click="OnPrintClick" />
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <Border DockPanel.Dock="Bottom" Classes="section bar" Margin="0,12,0,0">
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock x:Name="StatusText" Classes="caption"
+                     TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"
+                     VerticalAlignment="Center" />
+          <TextBlock x:Name="VersionText" Grid.Column="1" Classes="caption"
+                     Margin="16,0,0,0" VerticalAlignment="Center" />
+        </Grid>
+      </Border>
+
+      <Grid ColumnDefinitions="280,*,320" ColumnSpacing="12">
+        <DockPanel>
+          <Border DockPanel.Dock="Bottom" Classes="section" Margin="0,12,0,0">
+            <StackPanel Spacing="8">
+              <TextBlock Classes="heading" Text="Transport" />
+              <TextBlock Classes="caption" Text="Skip honours the transition. That cannot be turned off." />
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <Button Classes="pill lime" Content="Play / Pause" Click="OnPlayPauseClick" />
+                <Button Classes="pill orange" Content="Stop" Click="OnStopClick" />
+                <Button Classes="pill amber" Content="Next" Click="OnNextClick" />
+              </StackPanel>
+              <TextBlock x:Name="NowPlayingText" Classes="caption" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+          <Border Classes="section">
+            <StackPanel Spacing="10">
+              <TextBlock Classes="heading" Text="Cassette" />
+              <views:CassetteView x:Name="TapeView" Height="180" />
+              <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <Border Classes="section" Height="90">
+                  <Panel>
+                    <Image x:Name="FrontImage" Stretch="Uniform" />
+                    <TextBlock x:Name="FrontPlaceholder" Classes="caption"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Text="Front artwork" />
+                  </Panel>
+                </Border>
+                <Border Classes="section" Height="90">
+                  <Panel>
+                    <Image x:Name="BackImage" Stretch="Uniform" />
+                    <TextBlock x:Name="BackPlaceholder" Classes="caption"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Text="Back artwork" />
+                  </Panel>
+                </Border>
+              </Grid>
+              <TextBlock x:Name="DurationText" Classes="caption" TextWrapping="Wrap" />
+              <TextBlock Classes="caption" TextWrapping="Wrap"
+                         Text="Packaging music does not make distributing it permissible." />
+            </StackPanel>
+          </Border>
+        </DockPanel>
+
+        <Border Classes="section">
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,10">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Classes="heading" Text="Tracks" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                  <Button Classes="pill lime" Content="Add" Click="OnAddTracksClick" />
+                  <Button Classes="pill amber" Content="Up" Click="OnMoveUpClick" />
+                  <Button Classes="pill amber" Content="Down" Click="OnMoveDownClick" />
+                  <Button Classes="pill orange" Content="Remove" Click="OnRemoveTrackClick" />
+                </StackPanel>
+              </Grid>
+              <TextBlock Classes="caption" Text="Each row is one side of the playhead. The transition belongs to the outgoing track." />
+            </StackPanel>
+            <ListBox x:Name="TrackList" SelectionChanged="OnTrackSelected" />
+          </DockPanel>
+        </Border>
+
+        <ScrollViewer>
+          <StackPanel Spacing="12">
+            <Border Classes="section">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="heading" Text="Mix" />
+                <TextBlock Classes="caption" Text="Title" />
+                <TextBox x:Name="TitleBox" TextChanged="OnMetadataChanged" />
+                <TextBlock Classes="caption" Text="Description" />
+                <TextBox x:Name="DescriptionBox" Classes="prose" AcceptsReturn="True" Height="88" TextChanged="OnMetadataChanged" />
+                <TextBlock Classes="caption" Text="Source URL (Link)" />
+                <TextBox x:Name="SourceBox" TextChanged="OnMetadataChanged" />
+                <TextBlock Classes="caption" Text="License" />
+                <TextBox x:Name="LicenseBox" TextChanged="OnMetadataChanged" />
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                  <StackPanel>
+                    <TextBlock Classes="caption" Text="Text for side A" />
+                    <TextBox x:Name="SideABox" TextChanged="OnMetadataChanged" />
+                  </StackPanel>
+                  <StackPanel>
+                    <TextBlock Classes="caption" Text="Text for side B" />
+                    <TextBox x:Name="SideBBox" TextChanged="OnMetadataChanged" />
+                  </StackPanel>
+                </Grid>
+                <TextBlock Classes="caption" Text="Side B starting track (blank = all on A)" />
+                <TextBox x:Name="SideBStartBox" TextChanged="OnMetadataChanged" />
+              </StackPanel>
+            </Border>
+            <Border Classes="section">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="heading" Text="Appearance" />
+                <TextBlock Classes="caption" Text="Font" />
+                <ComboBox x:Name="FontBox" SelectionChanged="OnFontChanged" />
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                  <StackPanel>
+                    <TextBlock Classes="caption" Text="Tape color" />
+                    <TextBox x:Name="TapeColorBox" TextChanged="OnMetadataChanged" />
+                  </StackPanel>
+                  <StackPanel>
+                    <TextBlock Classes="caption" Text="Sticker color" />
+                    <TextBox x:Name="StickerColorBox" TextChanged="OnMetadataChanged" />
+                  </StackPanel>
+                  <StackPanel>
+                    <TextBlock Classes="caption" Text="Text color" />
+                    <TextBox x:Name="TextColorBox" TextChanged="OnMetadataChanged" />
+                  </StackPanel>
+                </Grid>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <Button Classes="pill amber" Content="Front artwork" Click="OnFrontArtClick" />
+                  <Button Classes="pill amber" Content="Back artwork" Click="OnBackArtClick" />
+                </StackPanel>
+              </StackPanel>
+            </Border>
+            <Border Classes="section">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="heading" Text="Selected track" />
+                <TextBlock Classes="caption" Text="Title" />
+                <TextBox x:Name="TrackTitleBox" TextChanged="OnTrackFieldsChanged" />
+                <TextBlock Classes="caption" Text="Codename" />
+                <TextBox x:Name="TrackCodenameBox" TextChanged="OnTrackFieldsChanged" />
+                <TextBlock Classes="caption" Text="License" />
+                <TextBox x:Name="TrackLicenseBox" TextChanged="OnTrackFieldsChanged" />
+                <TextBlock Classes="caption" Text="Source" />
+                <TextBox x:Name="TrackSourceBox" TextChanged="OnTrackFieldsChanged" />
+                <TextBlock Classes="caption" Text="Transition to the next track" />
+                <ComboBox x:Name="TransitionKindBox" SelectionChanged="OnTransitionChanged" />
+                <TextBlock Classes="caption" Text="Duration in seconds" />
+                <TextBox x:Name="TransitionDurationBox" TextChanged="OnTransitionDurationChanged" />
+                <Button Classes="pill lime" Content="This track starts side B" Click="OnSideBHereClick" />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </Grid>
+    </DockPanel>
+  </Border>
+</Window>

@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/K7Mix.Core/K7Mix.Core.csproj" />
+    <Project Path="src/K7Mix/K7Mix.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/K7Mix.Tests/K7Mix.Tests.csproj" />
+  </Folder>
+</Solution>

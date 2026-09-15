@@ -1,0 +1,43 @@
+# Summer bangers
+
+## Description
+
+The greats summer bangers of all time, music to listen to on the beach.
+
+A second paragraph to keep multiline values.
+
+## Link
+
+https://www.summer-bangers.com/
+
+## Text for side A
+
+Summer Bangers Class A
+
+## Text for side B
+
+Summer Bangers Class B
+
+## Font
+
+Cousine
+
+## Text color
+
+#000000
+
+## Tape color
+
+#FFFF00
+
+## Transitions in csv format
+
+none, crossfade 5s, crossfade 10s, none, crossfade 5s, silence 1s, crossfade 10s, silence 2s, none, crossfade 5s, crossfade 10s, none, crossfade 5s, silence 1s, crossfade 10s, silence 2s, none, crossfade 5s, crossfade 10s, none, crossfade 5s, silence 1s, crossfade 10s, silence 2s
+
+## License
+
+Non-Commercial Use Only
+
+## Sticker color
+
+#ffffff

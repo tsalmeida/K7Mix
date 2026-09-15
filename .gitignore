@@ -1,0 +1,39 @@
+# ---- .NET build output ----
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+artifacts/
+publish/
+*.user
+*.suo
+*.userprefs
+
+# ---- Tooling / caches ----
+.vs/
+.idea/
+.vscode/
+.claude/
+*.binlog
+TestResults/
+coverage*.xml
+coverage*.json
+
+# ---- Editors / OS ----
+.DS_Store
+Thumbs.db
+
+# ---- Local app data and generated documents ----
+K7Mix.log
+*.pdf
+*.sqlite
+*.sqlite3
+*.db
+*.k7m
+
+# ---- Local prompt logs ----
+/documents/prompts/*
+!/documents/prompts/template.md
+
+# ---- Local editor / workspace settings ----
+logarktos.lua

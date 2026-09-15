@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Tekhnexos mark in rose (Tailwind rose-600 #ec003f), unused by any sibling. -->
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <AssemblyName>K7Mix</AssemblyName>
+    <RootNamespace>K7Mix</RootNamespace>
+    <Product>K7 Mix</Product>
+    <Title>K7 Mix</Title>
+    <AssemblyTitle>K7 Mix</AssemblyTitle>
+    <Description>K7 Mix — a Tekhnexos companion for authoring cassette-style mixes as .k7m packages.</Description>
+    <Version>0.1.0</Version>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <DebugType>embedded</DebugType>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+    <EmbeddedResource Include="..\..\templates\*.typ" LogicalName="K7Mix.Templates.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\templates\fonts\*" LogicalName="K7Mix.TemplateFonts.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="K7Mix.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\K7Mix.Core\K7Mix.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.0" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.0" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.0" />
+    <PackageReference Include="Avalonia.Skia" Version="11.3.0" />
+  </ItemGroup>
+</Project>

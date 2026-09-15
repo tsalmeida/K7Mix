@@ -1,0 +1,25 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="K7Mix.App"
+             RequestedThemeVariant="Default">
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <SolidColorBrush x:Key="TkxAccentHover" Color="#fef3c6" />
+          <SolidColorBrush x:Key="TkxAccentActive" Color="#fffbeb" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <SolidColorBrush x:Key="TkxAccentHover" Color="#461901" />
+          <SolidColorBrush x:Key="TkxAccentActive" Color="#461901" />
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
+      <SolidColorBrush x:Key="TkxAccent" Color="#fe9a00" />
+    </ResourceDictionary>
+  </Application.Resources>
+
+  <Application.Styles>
+    <FluentTheme />
+    <StyleInclude Source="avares://K7Mix/Design/Design.axaml" />
+  </Application.Styles>
+</Application>

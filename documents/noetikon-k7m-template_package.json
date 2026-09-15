@@ -1,0 +1,73 @@
+{
+    "tekhnexos_dictionary_package_version": "1.0",
+    "dictionary_details": {
+        "scope": "private",
+        "title": "Noetikon - k7m Template",
+        "prefix": "Noetikon",
+        "metadata": {
+            "icon": "fa-book",
+            "color": "neutral",
+            "last_add_method": null,
+            "label_notes": {
+                "entry_title": "The title of the K7 Mix, such as \"Summer Hits\" or \"Bangers\".",
+                "description": "Prefer at most 500 characters (soft limit; longer values are accepted). Brief description or presentation, printed on the other side of the cover image. Example: \"These are the tracks I listened to during my trip to Japan. Each carried fond memories of a beautiful place.\"",
+                "url": "Optional. A link to associate with the file, which could be anything. A Spotify playlist link, for example. If this field is filled-in with a valid link, a QR code to it is printed alongside the description text in the inner cover.",
+                "datapoint_6": "Example: \"none, crossfade 5s, crossfade 10s, none, crossfade 5s, silence 1s, crossfade 10s, silence 2s\"."
+            },
+            "label_formats": {
+                "url": {
+                    "type": "url",
+                    "params": []
+                },
+                "datapoint_7": {
+                    "type": "single_select",
+                    "params": {
+                        "values": [
+                            "Royalty Free",
+                            "Creative Commons",
+                            "Public Domain",
+                            "Attribution-Required Commercial License",
+                            "Non-Commercial Use Only"
+                        ]
+                    }
+                }
+            },
+            "sample_entry_ids": [
+                62423
+            ]
+        },
+        "notes": "An example of what a k7m dictionary might look like. Just a draft at the moment. The tracks themselves are files in the folder where this exported dictionary is placed, with their order as the filename, such as \"01 - Deep forest.mp3\", \"02 - Swamp.wav\", \"03 - Savanna.midi\" and so on.  So track order is not determined in this dictionary.",
+        "entry_title": "Title",
+        "description": "Description",
+        "url": "Link",
+        "entries_count": 1,
+        "datapoint_1": "Text for side A",
+        "datapoint_2": "Text for side B",
+        "datapoint_3": "Font",
+        "datapoint_4": "Text color",
+        "datapoint_5": "Tape color",
+        "datapoint_6": "Transitions in csv format",
+        "datapoint_7": "License",
+        "datapoint_8": "Sticker color",
+        "used_at": "2026-09-15 05:00:45"
+    },
+    "entries": [
+        {
+            "id": 62423,
+            "user_id": 1,
+            "entry_title": "Summer bangers",
+            "description": "The greats summer bangers of all time, music to listen to on the beach.",
+            "url": "https:\/\/www.summer-bangers.com\/",
+            "datapoint_1": "Summer Bangers Class A",
+            "datapoint_2": "Summer Bangers Class B",
+            "datapoint_3": "Cousine",
+            "datapoint_4": "#000000",
+            "datapoint_5": "#FFFF00",
+            "datapoint_6": "none, crossfade 5s, crossfade 10s, none, crossfade 5s, silence 1s, crossfade 10s, silence 2s, none, crossfade 5s, crossfade 10s, none, crossfade 5s, silence 1s, crossfade 10s, silence 2s, none, crossfade 5s, crossfade 10s, none, crossfade 5s, silence 1s, crossfade 10s, silence 2s",
+            "datapoint_7": "Non-Commercial Use Only",
+            "datapoint_8": "#ffffff",
+            "created_at": "2026-09-15T04:54:53.000000Z",
+            "updated_at": "2026-09-15T05:00:45.000000Z"
+        }
+    ]
+}
