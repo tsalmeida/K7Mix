@@ -67,6 +67,12 @@ internal static class CassetteRenderer
         return dest;
     }
 
+    /// <summary>
+    /// Finds the printed sticker, not just any bright pixel: the corner mounting
+    /// screws are bright too, but they are small and sparse, while the sticker is
+    /// a wide, solidly filled band. Only rows that are mostly filled across a wide
+    /// span count as the label.
+    /// </summary>
     public static Rect LabelBounds()
     {
         var src = Source();
@@ -77,6 +83,7 @@ internal static class CassetteRenderer
         var top = h * 2 / 5;
         for (var y = 0; y < top; y++)
         {
+            var rowMinX = w; var rowMaxX = -1; var count = 0;
             for (var x = 0; x < w; x++)
             {
                 var i = (y * w + x) * 4;
@@ -84,11 +91,17 @@ internal static class CassetteRenderer
                 if (a < 128) continue;
                 var luma = (pixels[i + 2] * 77 + pixels[i + 1] * 151 + pixels[i] * 28) >> 8;
                 if (luma < SplitLuma) continue;
-                if (x < minX) minX = x;
-                if (y < minY) minY = y;
-                if (x > maxX) maxX = x;
-                if (y > maxY) maxY = y;
+                count++;
+                if (x < rowMinX) rowMinX = x;
+                if (x > rowMaxX) rowMaxX = x;
             }
+            if (rowMaxX < rowMinX) continue;
+            var span = rowMaxX - rowMinX + 1;
+            if (span < w * 0.3 || count < span * 0.85) continue;
+            if (rowMinX < minX) minX = rowMinX;
+            if (rowMaxX > maxX) maxX = rowMaxX;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
         }
         if (maxX <= minX || maxY <= minY)
             return new Rect(0.18, 0.10, 0.64, 0.18);

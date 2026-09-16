@@ -42,7 +42,7 @@
       </Border>
 
       <Grid ColumnDefinitions="340,*,300" ColumnSpacing="12">
-        <ScrollViewer>
+        <ScrollViewer Grid.Column="0">
           <StackPanel Spacing="12">
             <Border Classes="section">
               <StackPanel Spacing="8">
@@ -75,7 +75,7 @@
           </StackPanel>
         </ScrollViewer>
 
-        <Border Classes="section">
+        <Border Grid.Column="1" Classes="section">
           <DockPanel>
             <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,10">
               <Grid ColumnDefinitions="*,Auto">
@@ -93,7 +93,7 @@
           </DockPanel>
         </Border>
 
-        <ScrollViewer>
+        <ScrollViewer Grid.Column="2">
           <StackPanel Spacing="12">
             <Border Classes="section">
               <StackPanel Spacing="8">
