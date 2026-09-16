@@ -1,6 +1,6 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
 using K7Mix.Core;
 
@@ -23,6 +23,8 @@ public partial class MainWindow : Window
         VersionText.Text = $"v{Brand.Version}";
         FontBox.ItemsSource = CassetteFont.All.Select(f => f.DisplayName).ToList();
         TransitionKindBox.ItemsSource = new[] { "none", "crossfade", "fadeout", "silence" };
+        AddHandler(DragDrop.DropEvent, OnDrop);
+        AddHandler(DragDrop.DragOverEvent, OnDragOver);
         Opened += (_, _) =>
         {
             var startup = args.FirstOrDefault(a => !string.IsNullOrWhiteSpace(a));
@@ -57,8 +59,7 @@ public partial class MainWindow : Window
         TextColorBox.Text = _mix.Appearance.TextColor.ToHex();
         RebuildTracks();
         TapeView.Apply(_mix);
-        ShowArtwork(_mix.Appearance.FrontArtworkPath, FrontImage, FrontPlaceholder);
-        ShowArtwork(_mix.Appearance.BackArtworkPath, BackImage, BackPlaceholder);
+        CaseView.Apply(_mix);
         _suppress = false;
         UpdateStatus();
         BindSelectedTrack();
@@ -258,8 +259,8 @@ public partial class MainWindow : Window
             _settings.Remember(path);
             Bind();
             StatusText.Text = _mix.Locked
-                ? $"Opened locked mix {Path.GetFileName(path)}. Editing is disabled; export a new mix to change it."
-                : $"Opened {Path.GetFileName(path)}.";
+                ? $"Opened locked mix {Path.GetFileName(path)} — {_mix.Tracks.Count} track(s). Play is available; editing is not."
+                : $"Opened {Path.GetFileName(path)} — {_mix.Tracks.Count} track(s).";
         }
         catch (Exception ex)
         {
@@ -461,9 +462,24 @@ public partial class MainWindow : Window
 
     private void OnPlayPauseClick(object? sender, RoutedEventArgs e)
     {
-        EnsurePlayer();
-        _player?.PlayPause();
-        UpdateNowPlaying();
+        try
+        {
+            if (_mix.Tracks.Count == 0)
+            {
+                StatusText.Text = "This mix has no tracks to play.";
+                return;
+            }
+            EnsurePlayer();
+            _player?.PlayPause();
+            if (!string.IsNullOrWhiteSpace(_player?.LastError))
+                StatusText.Text = _player!.LastError;
+            UpdateNowPlaying();
+        }
+        catch (Exception ex)
+        {
+            AppLog.Error("Play", ex);
+            StatusText.Text = ex.Message;
+        }
     }
 
     private void OnStopClick(object? sender, RoutedEventArgs e)
@@ -503,6 +519,11 @@ public partial class MainWindow : Window
         var track = t.CurrentTrack;
         var side = t.DisplayedSide == 0 ? "A" : "B";
         var extra = t.IsTransitioning ? " · transition running" : "";
+        if (!string.IsNullOrWhiteSpace(_player.LastError))
+        {
+            NowPlayingText.Text = _player.LastError;
+            return;
+        }
         NowPlayingText.Text = track is null
             ? "Stopped."
             : $"Side {side} · {track.Title} · {MixValidator.FormatMinutes(t.PositionOnTrack)}{extra}";
@@ -518,18 +539,31 @@ public partial class MainWindow : Window
             ?? (string.IsNullOrWhiteSpace(_packagePath) ? "Unsaved mix." : Path.GetFileName(_packagePath));
     }
 
-    private static void ShowArtwork(string? path, Image image, TextBlock placeholder)
+    private void OnDragOver(object? sender, DragEventArgs e)
     {
-        if (!string.IsNullOrWhiteSpace(path) && File.Exists(path))
+        e.DragEffects = HasK7m(e) ? DragDropEffects.Copy : DragDropEffects.None;
+        e.Handled = true;
+    }
+
+    private void OnDrop(object? sender, DragEventArgs e)
+    {
+        var path = FirstK7m(e);
+        if (path is not null) OpenPackage(path);
+        e.Handled = true;
+    }
+
+    private static bool HasK7m(DragEventArgs e) => FirstK7m(e) is not null;
+
+    private static string? FirstK7m(DragEventArgs e)
+    {
+        if (!e.Data.Contains(DataFormats.Files)) return null;
+        foreach (var item in e.Data.GetFiles() ?? [])
         {
-            image.Source = new Bitmap(path);
-            placeholder.IsVisible = false;
+            var path = item.TryGetLocalPath();
+            if (path is not null && path.EndsWith(".k7m", StringComparison.OrdinalIgnoreCase))
+                return path;
         }
-        else
-        {
-            image.Source = null;
-            placeholder.IsVisible = true;
-        }
+        return null;
     }
 
     private static string Sanitize(string title)

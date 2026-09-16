@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using K7Mix.Core;
@@ -14,17 +15,20 @@ public partial class CassetteView : UserControl
 
     public void Apply(MixDocument mix)
     {
-        var tape = mix.Appearance.TapeColor;
-        var sticker = mix.Appearance.StickerColor;
+        Plate.Source = CassetteRenderer.Render(mix);
         var text = mix.Appearance.TextColor;
-        Shell.Background = new SolidColorBrush(Color.FromRgb(tape.R, tape.G, tape.B));
-        Sticker.Background = new SolidColorBrush(Color.FromRgb(sticker.R, sticker.G, sticker.B));
         TitleText.Foreground = new SolidColorBrush(Color.FromRgb(text.R, text.G, text.B));
         TitleText.Text = string.IsNullOrWhiteSpace(mix.Title) ? "Untitled mix" : mix.Title;
         TitleText.FontFamily = FontFor(mix.Appearance.Font);
+        var label = CassetteRenderer.LabelBounds();
+        TitleText.Margin = new Thickness(
+            label.X * 480,
+            label.Y * 270 + 4,
+            480 - (label.X + label.Width) * 480,
+            270 - (label.Y + label.Height) * 270);
     }
 
-    private static FontFamily FontFor(CassetteFont font) => font.Id switch
+    internal static FontFamily FontFor(CassetteFont font) => font.Id switch
     {
         "cousine" => new FontFamily("avares://K7Mix/Assets/TitleFonts#Cousine"),
         "rock-salt" => new FontFamily("avares://K7Mix/Assets/TitleFonts#Rock Salt"),

@@ -16,6 +16,7 @@ public static class K7mPackage
     {
         WriteIndented = true,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNameCaseInsensitive = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
     };
@@ -105,6 +106,17 @@ public static class K7mPackage
         if (File.Exists(snapshot))
             mix.SourceMarkdownSnapshot = File.ReadAllText(snapshot, Encoding.UTF8);
         ValidateRequiredFiles(mix, extractDirectory);
+        foreach (var track in mix.Tracks)
+        {
+            if (track.Duration > TimeSpan.Zero) continue;
+            var audio = track.OriginalSourcePath
+                ?? (string.IsNullOrWhiteSpace(track.PackagedAudioPath)
+                    ? null
+                    : Path.Combine(extractDirectory, track.PackagedAudioPath.Replace('/', Path.DirectorySeparatorChar)));
+            if (string.IsNullOrWhiteSpace(audio) || !File.Exists(audio)) continue;
+            try { track.Duration = FfmpegAudioEncoder.ProbeDuration(audio); }
+            catch { /* leave zero; the player will report it */ }
+        }
         return mix;
     }
 

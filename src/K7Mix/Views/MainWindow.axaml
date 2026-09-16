@@ -8,6 +8,7 @@
         Height="820"
         MinWidth="900"
         MinHeight="560"
+        DragDrop.AllowDrop="True"
         Background="{DynamicResource TkxPage}"
         WindowStartupLocation="CenterScreen">
 
@@ -40,48 +41,39 @@
         </Grid>
       </Border>
 
-      <Grid ColumnDefinitions="280,*,320" ColumnSpacing="12">
-        <DockPanel>
-          <Border DockPanel.Dock="Bottom" Classes="section" Margin="0,12,0,0">
-            <StackPanel Spacing="8">
-              <TextBlock Classes="heading" Text="Transport" />
-              <TextBlock Classes="caption" Text="Skip honours the transition. That cannot be turned off." />
-              <StackPanel Orientation="Horizontal" Spacing="6">
-                <Button Classes="pill lime" Content="Play / Pause" Click="OnPlayPauseClick" />
-                <Button Classes="pill orange" Content="Stop" Click="OnStopClick" />
-                <Button Classes="pill amber" Content="Next" Click="OnNextClick" />
+      <Grid ColumnDefinitions="340,*,300" ColumnSpacing="12">
+        <ScrollViewer>
+          <StackPanel Spacing="12">
+            <Border Classes="section">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="heading" Text="Cassette" />
+                <views:CassetteView x:Name="TapeView" Height="200" />
+                <TextBlock Classes="caption" Text="The same plate Running Wild draws on the Settings table." />
               </StackPanel>
-              <TextBlock x:Name="NowPlayingText" Classes="caption" TextWrapping="Wrap" />
-            </StackPanel>
-          </Border>
-          <Border Classes="section">
-            <StackPanel Spacing="10">
-              <TextBlock Classes="heading" Text="Cassette" />
-              <views:CassetteView x:Name="TapeView" Height="180" />
-              <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                <Border Classes="section" Height="90">
-                  <Panel>
-                    <Image x:Name="FrontImage" Stretch="Uniform" />
-                    <TextBlock x:Name="FrontPlaceholder" Classes="caption"
-                               HorizontalAlignment="Center" VerticalAlignment="Center"
-                               Text="Front artwork" />
-                  </Panel>
-                </Border>
-                <Border Classes="section" Height="90">
-                  <Panel>
-                    <Image x:Name="BackImage" Stretch="Uniform" />
-                    <TextBlock x:Name="BackPlaceholder" Classes="caption"
-                               HorizontalAlignment="Center" VerticalAlignment="Center"
-                               Text="Back artwork" />
-                  </Panel>
-                </Border>
-              </Grid>
-              <TextBlock x:Name="DurationText" Classes="caption" TextWrapping="Wrap" />
-              <TextBlock Classes="caption" TextWrapping="Wrap"
-                         Text="Packaging music does not make distributing it permissible." />
-            </StackPanel>
-          </Border>
-        </DockPanel>
+            </Border>
+            <Border Classes="section">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="heading" Text="Jewel case" />
+                <views:JewelCaseView x:Name="CaseView" Height="170" />
+              </StackPanel>
+            </Border>
+            <Border Classes="section">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="heading" Text="Transport" />
+                <TextBlock Classes="caption" Text="Skip honours the transition. That cannot be turned off." />
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <Button Classes="pill lime" Content="Play / Pause" Click="OnPlayPauseClick" />
+                  <Button Classes="pill orange" Content="Stop" Click="OnStopClick" />
+                  <Button Classes="pill amber" Content="Next" Click="OnNextClick" />
+                </StackPanel>
+                <TextBlock x:Name="NowPlayingText" Classes="caption" TextWrapping="Wrap" />
+                <TextBlock x:Name="DurationText" Classes="caption" TextWrapping="Wrap" />
+                <TextBlock Classes="caption" TextWrapping="Wrap"
+                           Text="Packaging music does not make distributing it permissible." />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
 
         <Border Classes="section">
           <DockPanel>

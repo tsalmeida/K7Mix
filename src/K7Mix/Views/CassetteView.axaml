@@ -2,25 +2,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="K7Mix.Views.CassetteView">
   <Viewbox Stretch="Uniform">
-    <Canvas Width="320" Height="204">
-      <Border Canvas.Left="18" Canvas.Top="28" Width="284" Height="148"
-              CornerRadius="10" Name="Shell">
-        <Border.OpacityMask>
-          <ImageBrush Source="/Assets/Cassette/cassette.png" Stretch="Fill" />
-        </Border.OpacityMask>
-      </Border>
-      <Image Source="/Assets/Cassette/cassette.png" Opacity="0.18"
-             Width="320" Height="204" Stretch="Fill" />
-      <Border Name="Sticker" Canvas.Left="70" Canvas.Top="78"
-              Width="180" Height="52" CornerRadius="3">
-        <TextBlock Name="TitleText"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center"
-                   TextAlignment="Center"
-                   TextWrapping="Wrap"
-                   MaxWidth="168"
-                   FontSize="16" />
-      </Border>
-    </Canvas>
+    <Panel Width="480" Height="270">
+      <Image x:Name="Plate" Stretch="Uniform" />
+      <TextBlock x:Name="TitleText"
+                 TextAlignment="Center"
+                 TextWrapping="Wrap"
+                 FontSize="18" />
+    </Panel>
   </Viewbox>
 </UserControl>
