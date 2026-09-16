@@ -19,7 +19,16 @@ public partial class CassetteView : UserControl
         var text = mix.Appearance.TextColor;
         TitleText.Foreground = new SolidColorBrush(Color.FromRgb(text.R, text.G, text.B));
         TitleText.Text = string.IsNullOrWhiteSpace(mix.Title) ? "Untitled mix" : mix.Title;
-        TitleText.FontFamily = FontFor(mix.Appearance.Font);
+        try
+        {
+            TitleText.FontFamily = FontFor(mix.Appearance.Font);
+        }
+        catch (Exception)
+        {
+            // Unresolvable embedded font: fall back to the UI default so the app
+            // never crashes during layout over a bad font name.
+            TitleText.FontFamily = new FontFamily("avares://K7Mix/Assets/Fonts#Roboto");
+        }
         var label = CassetteRenderer.LabelBounds();
         TitleText.Margin = new Thickness(
             label.X * 480,
@@ -32,7 +41,7 @@ public partial class CassetteView : UserControl
     {
         "cousine" => new FontFamily("avares://K7Mix/Assets/TitleFonts#Cousine"),
         "rock-salt" => new FontFamily("avares://K7Mix/Assets/TitleFonts#Rock Salt"),
-        "fixedsys" => new FontFamily("avares://K7Mix/Assets/TitleFonts#Fixedsys Excelsior 3.01"),
+        "fixedsys" => new FontFamily("avares://K7Mix/Assets/TitleFonts#Fixedsys Excelsior"),
         _ => new FontFamily("avares://K7Mix/Assets/Fonts#Roboto"),
     };
 }

@@ -118,6 +118,29 @@ public class MarkdownImportTests
     }
 
     [Fact]
+    public void Absolute_path_in_csv_is_accepted()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "k7mix-abspath-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        // Audio file in a completely separate directory.
+        var audioDir = Path.Combine(Path.GetTempPath(), "k7mix-audio-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(audioDir);
+        TestAudio.SineWav(audioDir, "track.wav", 1);
+        var absPath = Path.Combine(audioDir, "track.wav").Replace('\\', '/');
+        var markdown = $"""
+            # Absolute path
+
+            ## Tracks in csv format
+            filename,title,codename,license,source
+            "{absPath}",My Track,my-track,,
+            """;
+        var result = MarkdownImporter.Import(markdown, root);
+        Assert.Single(result.Document.Tracks);
+        Assert.Equal("My Track", result.Document.Tracks[0].Title);
+        Assert.False(result.Issues.HasErrors);
+    }
+
+    [Fact]
     public void Unknown_fields_are_preserved()
     {
         var markdown = """

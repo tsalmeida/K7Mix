@@ -7,6 +7,11 @@ public static class PathSafety
         if (string.IsNullOrWhiteSpace(relative))
             throw new MixValidationException($"{fieldName} is empty.");
 
+        // An absolute path is accepted as-is — the user is explicitly pointing
+        // at a file outside the source folder, which is fine for track audio.
+        if (Path.IsPathRooted(relative))
+            return Path.GetFullPath(relative);
+
         var rootFull = Path.GetFullPath(root);
         if (!rootFull.EndsWith(Path.DirectorySeparatorChar))
             rootFull += Path.DirectorySeparatorChar;

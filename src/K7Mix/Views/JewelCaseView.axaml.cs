@@ -25,12 +25,14 @@ public partial class JewelCaseView : UserControl
         Spine.Background = tapeBrush;
         SpineText.Text = mix.Title;
         SpineText.Foreground = inkBrush;
-        SpineText.FontFamily = CassetteView.FontFor(mix.Appearance.Font);
+        try { SpineText.FontFamily = CassetteView.FontFor(mix.Appearance.Font); }
+        catch (Exception) { /* fall back to whatever the control currently has */ }
 
         FrontPanel.Background = stickerBrush;
         FrontTitle.Text = string.IsNullOrWhiteSpace(mix.Title) ? "Untitled mix" : mix.Title;
         FrontTitle.Foreground = inkBrush;
-        FrontTitle.FontFamily = CassetteView.FontFor(mix.Appearance.Font);
+        try { FrontTitle.FontFamily = CassetteView.FontFor(mix.Appearance.Font); }
+        catch (Exception) { /* fall back to whatever the control currently has */ }
         FrontHint.Foreground = inkBrush;
 
         BackPanel.Background = tapeBrush;

@@ -111,7 +111,7 @@
                     <TextBlock Classes="caption" Text="Text for side A" />
                     <TextBox x:Name="SideABox" TextChanged="OnMetadataChanged" />
                   </StackPanel>
-                  <StackPanel>
+                  <StackPanel Grid.Column="1">
                     <TextBlock Classes="caption" Text="Text for side B" />
                     <TextBox x:Name="SideBBox" TextChanged="OnMetadataChanged" />
                   </StackPanel>
@@ -130,11 +130,11 @@
                     <TextBlock Classes="caption" Text="Tape color" />
                     <TextBox x:Name="TapeColorBox" TextChanged="OnMetadataChanged" />
                   </StackPanel>
-                  <StackPanel>
+                  <StackPanel Grid.Column="1">
                     <TextBlock Classes="caption" Text="Sticker color" />
                     <TextBox x:Name="StickerColorBox" TextChanged="OnMetadataChanged" />
                   </StackPanel>
-                  <StackPanel>
+                  <StackPanel Grid.Column="2">
                     <TextBlock Classes="caption" Text="Text color" />
                     <TextBox x:Name="TextColorBox" TextChanged="OnMetadataChanged" />
                   </StackPanel>
@@ -156,6 +156,15 @@
                 <TextBox x:Name="TrackLicenseBox" TextChanged="OnTrackFieldsChanged" />
                 <TextBlock Classes="caption" Text="Source" />
                 <TextBox x:Name="TrackSourceBox" TextChanged="OnTrackFieldsChanged" />
+                <TextBlock Classes="caption" Text="Audio file" />
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                  <TextBlock x:Name="TrackAudioPathText"
+                             Classes="caption mono"
+                             TextWrapping="NoWrap"
+                             TextTrimming="CharacterEllipsis"
+                             VerticalAlignment="Center" />
+                  <Button Grid.Column="1" Classes="pill amber" Content="Set audio file…" Click="OnSetAudioFileClick" />
+                </Grid>
                 <TextBlock Classes="caption" Text="Transition to the next track" />
                 <ComboBox x:Name="TransitionKindBox" SelectionChanged="OnTransitionChanged" />
                 <TextBlock Classes="caption" Text="Duration in seconds" />

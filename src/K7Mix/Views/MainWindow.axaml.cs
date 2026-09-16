@@ -94,6 +94,9 @@ public partial class MainWindow : Window
         TrackCodenameBox.Text = track?.Codename ?? "";
         TrackLicenseBox.Text = track?.License ?? "";
         TrackSourceBox.Text = track?.Source ?? "";
+        TrackAudioPathText.Text = track?.OriginalSourcePath is { } p
+            ? Path.GetFileName(p)
+            : track is null ? "" : "(no audio file set)";
         var kind = track?.TransitionOut.Kind.ToString().ToLowerInvariant() ?? "none";
         if (kind == "fadeout") kind = "fadeout";
         TransitionKindBox.SelectedItem = track?.TransitionOut.Kind switch
@@ -395,6 +398,44 @@ public partial class MainWindow : Window
         }
         RebuildTracks();
         UpdateStatus();
+    }
+
+    private async void OnSetAudioFileClick(object? sender, RoutedEventArgs e)
+    {
+        if (_mix.Locked) { StatusText.Text = "Locked mixes cannot be edited."; return; }
+        var track = SelectedTrack();
+        if (track is null) { StatusText.Text = "Select a track first."; return; }
+        var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            Title = "Set audio file for selected track",
+            AllowMultiple = false,
+            FileTypeFilter =
+            [
+                new FilePickerFileType("Audio") { Patterns = ["*.wav", "*.mp3", "*.flac", "*.ogg", "*.oga", "*.mid", "*.midi"] },
+            ],
+        });
+        var path = files.FirstOrDefault()?.TryGetLocalPath();
+        if (path is null) return;
+        if (!FfmpegAudioEncoder.IsSupportedExtension(path))
+        {
+            StatusText.Text = $"Unsupported file: {Path.GetFileName(path)}";
+            return;
+        }
+        try
+        {
+            track.OriginalSourcePath = path;
+            track.SourceExtension = Path.GetExtension(path);
+            track.Duration = FfmpegAudioEncoder.ProbeDuration(path);
+            if (string.IsNullOrWhiteSpace(track.Title))
+                track.Title = Path.GetFileNameWithoutExtension(path);
+            BindSelectedTrack();
+            RebuildTracks();
+            UpdateStatus();
+        }
+        catch (Exception ex)
+        {
+            StatusText.Text = $"{Path.GetFileName(path)}: {ex.Message}";
+        }
     }
 
     private void OnMoveUpClick(object? sender, RoutedEventArgs e)
