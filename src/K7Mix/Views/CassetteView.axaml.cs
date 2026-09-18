@@ -16,6 +16,13 @@ public partial class CassetteView : UserControl
     public void Apply(MixDocument mix)
     {
         Plate.Source = CassetteRenderer.Render(mix);
+
+        // Match the panel to the cropped plate so Stretch="Uniform" fills it exactly.
+        // Otherwise the image is letterboxed inside the panel and the title, which is
+        // placed from the panel's own size, drifts off the printed label.
+        PlateArea.Height = 270;
+        PlateArea.Width = 270 * CassetteRenderer.AspectRatio();
+
         var text = mix.Appearance.TextColor;
         TitleText.Foreground = new SolidColorBrush(Color.FromRgb(text.R, text.G, text.B));
         TitleText.Text = string.IsNullOrWhiteSpace(mix.Title) ? "Untitled mix" : mix.Title;
@@ -30,11 +37,13 @@ public partial class CassetteView : UserControl
             TitleText.FontFamily = new FontFamily("avares://K7Mix/Assets/Fonts#Roboto");
         }
         var label = CassetteRenderer.LabelBounds();
+        var w = PlateArea.Width;
+        var h = PlateArea.Height;
         TitleText.Margin = new Thickness(
-            label.X * 480,
-            label.Y * 270 + 4,
-            480 - (label.X + label.Width) * 480,
-            270 - (label.Y + label.Height) * 270);
+            label.X * w,
+            label.Y * h + 4,
+            w - (label.X + label.Width) * w,
+            h - (label.Y + label.Height) * h);
     }
 
     internal static FontFamily FontFor(CassetteFont font) => font.Id switch
