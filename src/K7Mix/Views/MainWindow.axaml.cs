@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -12,8 +13,42 @@ public partial class MainWindow : Window
     private MixDocument _mix = new();
     private MixPlayer? _player;
     private string? _packagePath;
-    private bool _suppress;
+    private int _suppressDepth;
     private string? _extractFolder;
+    private readonly ObservableCollection<TrackRow> _trackRows = [];
+
+    /// <summary>
+    /// The track the right-hand editors currently hold the text of. Avalonia raises
+    /// TextChanged from a queued dispatcher operation, so a field edit can arrive
+    /// after the selection has already moved on; writing back through this instead
+    /// of the live selection keeps the text with the track it was typed for.
+    /// </summary>
+    private MixTrack? _editingTrack;
+
+    private bool Suppressed => _suppressDepth > 0;
+
+    /// <summary>
+    /// Suppresses the editor write-back handlers for the duration of the scope.
+    /// Must nest: these blocks re-enter each other, and a plain bool cleared on
+    /// exit would strip the guard from the caller that is still running.
+    /// </summary>
+    private IDisposable Suppress()
+    {
+        _suppressDepth++;
+        return new SuppressScope(this);
+    }
+
+    private sealed class SuppressScope(MainWindow owner) : IDisposable
+    {
+        private bool _done;
+
+        public void Dispose()
+        {
+            if (_done) return;
+            _done = true;
+            owner._suppressDepth--;
+        }
+    }
 
     public MainWindow() : this([]) { }
 
@@ -23,6 +58,7 @@ public partial class MainWindow : Window
         VersionText.Text = $"v{Brand.Version}";
         FontBox.ItemsSource = CassetteFont.All.Select(f => f.DisplayName).ToList();
         TransitionKindBox.ItemsSource = new[] { "none", "crossfade", "fadeout", "silence" };
+        TrackList.ItemsSource = _trackRows;
         AddHandler(DragDrop.DropEvent, OnDrop);
         AddHandler(DragDrop.DragOverEvent, OnDragOver);
         Opened += (_, _) =>
@@ -45,38 +81,56 @@ public partial class MainWindow : Window
 
     private void Bind()
     {
-        _suppress = true;
-        TitleBox.Text = _mix.Title;
-        DescriptionBox.Text = _mix.Description;
-        SourceBox.Text = _mix.SourceUrl;
-        LicenseBox.Text = _mix.License;
-        SideABox.Text = _mix.SideALabel;
-        SideBBox.Text = _mix.SideBLabel;
-        SideBStartBox.Text = _mix.SideBStartTrack?.ToString() ?? "";
-        FontBox.SelectedItem = _mix.Appearance.Font.DisplayName;
-        TapeColorBox.Text = _mix.Appearance.TapeColor.ToHex();
-        StickerColorBox.Text = _mix.Appearance.StickerColor.ToHex();
-        TextColorBox.Text = _mix.Appearance.TextColor.ToHex();
-        RebuildTracks();
-        TapeView.Apply(_mix);
-        CaseView.Apply(_mix);
-        _suppress = false;
+        using (Suppress())
+        {
+            TitleBox.Text = _mix.Title;
+            DescriptionBox.Text = _mix.Description;
+            SourceBox.Text = _mix.SourceUrl;
+            LicenseBox.Text = _mix.License;
+            SideABox.Text = _mix.SideALabel;
+            SideBBox.Text = _mix.SideBLabel;
+            SideBStartBox.Text = _mix.SideBStartTrack?.ToString() ?? "";
+            FontBox.SelectedItem = _mix.Appearance.Font.DisplayName;
+            TapeColorBox.Text = _mix.Appearance.TapeColor.ToHex();
+            StickerColorBox.Text = _mix.Appearance.StickerColor.ToHex();
+            TextColorBox.Text = _mix.Appearance.TextColor.ToHex();
+            RebuildTracks();
+            TapeView.Apply(_mix);
+            CaseView.Apply(_mix);
+        }
         UpdateStatus();
         BindSelectedTrack();
     }
 
     private void RebuildTracks()
     {
+        // Refresh the rows in place. Assigning TrackList.ItemsSource here would reset
+        // the selection model and raise SelectionChanged, which lands in
+        // BindSelectedTrack, rewrites the editors, and comes back through TextChanged
+        // to whichever handler called this — a loop that pegs the UI thread and leaks
+        // until the process is killed.
         var selected = TrackList.SelectedIndex;
-        TrackList.ItemsSource = _mix.Tracks.Select((t, i) =>
+        while (_trackRows.Count > _mix.Tracks.Count)
+            _trackRows.RemoveAt(_trackRows.Count - 1);
+        for (var i = 0; i < _mix.Tracks.Count; i++)
         {
-            var side = _mix.SideOf(i) == 0 ? "A" : "B";
-            var trans = i < _mix.Tracks.Count - 1 ? t.TransitionOut.ToToken() : "end";
-            var code = string.IsNullOrWhiteSpace(t.Codename) ? "" : $" · {t.Codename}";
-            return $"{i + 1}. [{side}] {t.Title}{code}  {MixValidator.FormatMinutes(t.Duration)}  → {trans}";
-        }).ToList();
-        if (selected >= 0 && selected < _mix.Tracks.Count)
+            var text = FormatTrackRow(i);
+            if (i < _trackRows.Count)
+                _trackRows[i].Text = text;
+            else
+                _trackRows.Add(new TrackRow(text));
+        }
+        if (selected >= 0 && selected < _mix.Tracks.Count && TrackList.SelectedIndex != selected)
             TrackList.SelectedIndex = selected;
+    }
+
+    private string FormatTrackRow(int i)
+    {
+        var t = _mix.Tracks[i];
+        var side = _mix.SideOf(i) == 0 ? "A" : "B";
+        var trans = i < _mix.Tracks.Count - 1 ? t.TransitionOut.ToToken() : "end";
+        var code = string.IsNullOrWhiteSpace(t.Codename) ? "" : $" · {t.Codename}";
+        return $"{i + 1}. [{side}] {t.Title}{code}  {MixValidator.FormatMinutes(t.Duration)}  → {trans}";
     }
 
     private MixTrack? SelectedTrack()
@@ -88,8 +142,9 @@ public partial class MainWindow : Window
 
     private void BindSelectedTrack()
     {
-        _suppress = true;
+        using var _ = Suppress();
         var track = SelectedTrack();
+        _editingTrack = track;
         TrackTitleBox.Text = track?.Title ?? "";
         TrackCodenameBox.Text = track?.Codename ?? "";
         TrackLicenseBox.Text = track?.License ?? "";
@@ -109,12 +164,11 @@ public partial class MainWindow : Window
         TransitionDurationBox.Text = track is null || track.TransitionOut.IsInstant
             ? ""
             : track.TransitionOut.Duration.TotalSeconds.ToString("0.###");
-        _suppress = false;
     }
 
     private void ReadMetadata()
     {
-        if (_suppress) return;
+        if (Suppressed) return;
         _mix.Title = TitleBox.Text ?? "";
         _mix.Description = DescriptionBox.Text ?? "";
         _mix.SourceUrl = SourceBox.Text ?? "";
@@ -137,7 +191,7 @@ public partial class MainWindow : Window
 
     private void OnFontChanged(object? sender, SelectionChangedEventArgs e)
     {
-        if (_suppress) return;
+        if (Suppressed) return;
         if (FontBox.SelectedItem is string name && CassetteFont.TryParse(name, out var font))
         {
             _mix.Appearance.Font = font;
@@ -149,8 +203,8 @@ public partial class MainWindow : Window
 
     private void OnTrackFieldsChanged(object? sender, TextChangedEventArgs e)
     {
-        if (_suppress) return;
-        var track = SelectedTrack();
+        if (Suppressed) return;
+        var track = _editingTrack;
         if (track is null) return;
         track.Title = TrackTitleBox.Text ?? "";
         track.Codename = TrackCodenameBox.Text ?? "";
@@ -166,9 +220,11 @@ public partial class MainWindow : Window
 
     private void ApplyTransition()
     {
-        if (_suppress) return;
-        var track = SelectedTrack();
+        if (Suppressed) return;
+        var track = _editingTrack;
         if (track is null) return;
+        var index = _mix.Tracks.IndexOf(track);
+        if (index < 0) return; // the edited track was removed before this event arrived
         var kindToken = TransitionKindBox.SelectedItem as string ?? "none";
         var durationText = TransitionDurationBox.Text ?? "";
         try
@@ -176,7 +232,7 @@ public partial class MainWindow : Window
             if (kindToken == "none")
                 track.TransitionOut = TrackTransition.None;
             else
-                track.TransitionOut = TransitionParser.Parse($"{kindToken} {durationText}s", TrackList.SelectedIndex);
+                track.TransitionOut = TransitionParser.Parse($"{kindToken} {durationText}s", index);
         }
         catch (MixValidationException)
         {

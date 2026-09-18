@@ -89,7 +89,13 @@
               </Grid>
               <TextBlock Classes="caption" Text="Each row is one side of the playhead. The transition belongs to the outgoing track." />
             </StackPanel>
-            <ListBox x:Name="TrackList" SelectionChanged="OnTrackSelected" />
+            <ListBox x:Name="TrackList" SelectionChanged="OnTrackSelected">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <TextBlock Text="{Binding Text}" />
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
           </DockPanel>
         </Border>
 
