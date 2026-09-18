@@ -32,22 +32,22 @@ A tape in the deck is always in one of two states.
 
 ### 2.1 Following the game (until the player touches it)
 
-While it follows the game, **the game decides what plays**, and every change goes through the **outgoing track's own boundary** (`transitionOut`: `none`, `crossfade Ds`, `fadeout Ds`, `silence Ds`), never an instant cut the tape did not ask for. A change requested while a transition runs **waits** and is asked again next frame. It is not queued and not dropped.
+While it follows the game, **the game decides what plays**, and every change goes through the **boundary belonging to the track being moved into** (`transitionIn`: `none`, `crossfade Ds`, `fadeout Ds`, `silence Ds`), never an instant cut the tape did not ask for. A change requested while a transition runs **waits** and is asked again next frame. It is not queued and not dropped.
 
 There are two ways to follow the game. A game picks one:
 
 **A. By codename (Running Wild).** Each moment of the game has a slug (`menu`, an environment, an ending...). The game says which moment is on every frame; the tape plays the track whose `codename` matches, **looping** it. A moment the tape has no track for keeps the tape rolling. Official tapes must cover every moment, and no codename may repeat within a tape. Use this when the music should score *what is happening*.
 
-**B. By shuffle (Knife and Card).** The game says which **table** is up every frame (`"launcher"`, or the game's title). The tape plays a **random track to its end**, and that track's boundary carries it into another random track, **never the same one twice in a row**. Every change of table puts a fresh random track on. Codenames are ignored. Use this when the music is a **playlist**, the same everywhere, which is what Knife and Card always had.
+**B. By shuffle (Knife and Card).** The game says which **table** is up every frame (`"launcher"`, or the game's title). The tape plays a **random track to its end**, and the boundary belonging to the track it picks next carries it there, **never the same one twice in a row**. Every change of table puts a fresh random track on. Codenames are ignored. Use this when the music is a **playlist**, the same everywhere, which is what Knife and Card always had.
 
 ### 2.2 Off the game: the player's tape
 
 **The moment the player presses any transport key except volume** (play/pause, stop, previous, next, previous/next side, on the Walkman or on the keyboard's media keys), the tape stops following the game and plays by **K7 Mix's own rules**:
 
-- each track once, **in order** from where it is;
+- each track in order from where it is, and **twice** when it is marked `loop`;
 - every boundary through its configured transition, fired at the exact frame it needs (a crossfade starts its length before the outgoing track ends; `none` is gapless);
 - a skip pressed during a transition is **ignored**;
-- playback **ends after the last track** (it does not loop);
+- after the last track the tape **loops back to the first**, through the first track's own transition;
 - previous: back to the top of the track if more than 3 s in, else the previous track;
 - previous/next side: jump to the top of side A / side B (`sideBStartTrack`).
 

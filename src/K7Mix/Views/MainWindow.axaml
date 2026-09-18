@@ -60,12 +60,28 @@
             <Border Classes="section">
               <StackPanel Spacing="8">
                 <TextBlock Classes="heading" Text="Transport" />
-                <TextBlock Classes="caption" Text="Skip honours the transition. That cannot be turned off." />
+                <TextBlock Classes="caption" TextWrapping="Wrap"
+                           Text="Skip honours the transition. That cannot be turned off. At the end, the tape loops back to track 1." />
                 <StackPanel Orientation="Horizontal" Spacing="6">
                   <Button Classes="pill lime" Content="Play / Pause" Click="OnPlayPauseClick" />
                   <Button Classes="pill orange" Content="Stop" Click="OnStopClick" />
                   <Button Classes="pill amber" Content="Next" Click="OnNextClick" />
                 </StackPanel>
+                <TextBlock x:Name="NowPlayingTitle" Classes="subheading"
+                           TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
+                <Border Height="14" CornerRadius="7" ClipToBounds="True"
+                        Background="{DynamicResource TkxPage}"
+                        BorderBrush="{DynamicResource TkxBorder}"
+                        BorderThickness="2">
+                  <Panel x:Name="ProgressArea" SizeChanged="OnProgressSizeChanged">
+                    <Rectangle x:Name="ProgressFill" Width="0"
+                               HorizontalAlignment="Left"
+                               Fill="{DynamicResource TkxAccent}" />
+                    <Rectangle x:Name="LoopMark" Width="2" IsVisible="False"
+                               HorizontalAlignment="Left"
+                               Fill="{DynamicResource TkxText}" />
+                  </Panel>
+                </Border>
                 <TextBlock x:Name="NowPlayingText" Classes="caption" TextWrapping="Wrap" />
                 <TextBlock x:Name="DurationText" Classes="caption" TextWrapping="Wrap" />
                 <TextBlock Classes="caption" TextWrapping="Wrap"
@@ -87,7 +103,8 @@
                   <Button Classes="pill orange" Content="Remove" Click="OnRemoveTrackClick" />
                 </StackPanel>
               </Grid>
-              <TextBlock Classes="caption" Text="Each row is one side of the playhead. The transition belongs to the outgoing track." />
+              <TextBlock Classes="caption" TextWrapping="Wrap"
+                         Text="A transition belongs to the track it leads into, so it stays with that track through a reorder. Track 1's is the loop back to the start, played when the tape reaches the end." />
             </StackPanel>
             <ListBox x:Name="TrackList" SelectionChanged="OnTrackSelected">
               <ListBox.ItemTemplate>
@@ -171,7 +188,11 @@
                              VerticalAlignment="Center" />
                   <Button Grid.Column="1" Classes="pill amber" Content="Set audio file…" Click="OnSetAudioFileClick" />
                 </Grid>
-                <TextBlock Classes="caption" Text="Transition to the next track" />
+                <CheckBox x:Name="TrackLoopBox"
+                          Content="Play this track twice before moving on"
+                          IsCheckedChanged="OnTrackLoopChanged" />
+                <TextBlock Classes="caption" Text="Transition into this track" />
+                <TextBlock x:Name="TransitionHintText" Classes="caption" TextWrapping="Wrap" />
                 <ComboBox x:Name="TransitionKindBox" SelectionChanged="OnTransitionChanged" />
                 <TextBlock Classes="caption" Text="Duration in seconds" />
                 <TextBox x:Name="TransitionDurationBox" TextChanged="OnTransitionDurationChanged" />

@@ -95,10 +95,11 @@ public static class K7mPackage
                   ?? throw new MixValidationException("manifest.json could not be read.");
         if (!string.Equals(dto.Format, MixDocument.FormatName, StringComparison.OrdinalIgnoreCase))
             throw new MixValidationException($"Unsupported format '{dto.Format}'.");
-        if (dto.FormatVersion != CurrentVersion)
+        if (dto.FormatVersion < 1 || dto.FormatVersion > CurrentVersion)
         {
             throw new MixValidationException(
-                $"Unsupported .k7m format version {dto.FormatVersion}. This app reads version {CurrentVersion}.");
+                $"Unsupported .k7m format version {dto.FormatVersion}. " +
+                $"This app reads versions 1 to {CurrentVersion}.");
         }
 
         var mix = dto.ToDocument(extractDirectory);
@@ -252,7 +253,8 @@ internal sealed class ManifestDto
             SourceExtension = t.SourceExtension,
             SourceSha256 = t.SourceSha256,
             EncodedProfile = t.EncodedProfile,
-            TransitionOut = t.TransitionOut.ToToken(),
+            TransitionIn = t.TransitionIn.ToToken(),
+            Loop = t.Loop,
         }).ToList(),
         LicenseDocuments = [.. mix.LicenseDocuments],
         UnknownFields = new Dictionary<string, string>(mix.UnknownFields, StringComparer.OrdinalIgnoreCase),
@@ -289,7 +291,8 @@ internal sealed class ManifestDto
                 License = t.License ?? "",
                 Source = t.Source ?? "",
                 Duration = TimeSpan.FromSeconds(t.DurationSeconds),
-                TransitionOut = TransitionParser.Parse(t.TransitionOut, mix.Tracks.Count),
+                TransitionIn = TransitionParser.Parse(t.TransitionIn, mix.Tracks.Count),
+                Loop = t.Loop,
                 PackagedAudioPath = t.Audio,
                 OriginalSourcePath = Combine(root, t.Audio),
                 SourceExtension = t.SourceExtension,
@@ -297,7 +300,24 @@ internal sealed class ManifestDto
                 EncodedProfile = t.EncodedProfile ?? PlaybackProfile.Id,
             });
         }
+        if (FormatVersion < 2) MigrateTransitionsToVersion2(mix);
         return mix;
+    }
+
+    /// <summary>
+    /// Version 1 stored a boundary on the outgoing track, so track <em>i</em> held
+    /// the transition into track <em>i+1</em> and the last track's value was never
+    /// used. Version 2 stores it on the incoming track, which frees the first
+    /// track's slot for the loop back to the start. Shift each value one place
+    /// forward and leave the loop back at none: a version 1 tape stopped at the end
+    /// rather than looping, so it has no such boundary to carry over.
+    /// </summary>
+    private void MigrateTransitionsToVersion2(MixDocument mix)
+    {
+        for (var i = mix.Tracks.Count - 1; i >= 1; i--)
+            mix.Tracks[i].TransitionIn = TransitionParser.Parse(Tracks[i - 1].TransitionOut, i);
+        if (mix.Tracks.Count > 0)
+            mix.Tracks[0].TransitionIn = TrackTransition.None;
     }
 
     private static string? Combine(string root, string? relative)
@@ -329,5 +349,16 @@ internal sealed class TrackDto
     public string? SourceExtension { get; set; }
     public string? SourceSha256 { get; set; }
     public string? EncodedProfile { get; set; }
+
+    /// <summary>The boundary that brings playback into this track.</summary>
+    public string? TransitionIn { get; set; }
+
+    /// <summary>Play this track through twice before moving on.</summary>
+    public bool Loop { get; set; }
+
+    /// <summary>
+    /// Read only, for format version 1, which stored the boundary on the outgoing
+    /// track. Never written: leaving it null keeps it out of the manifest.
+    /// </summary>
     public string? TransitionOut { get; set; }
 }

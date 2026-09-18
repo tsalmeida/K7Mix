@@ -2,16 +2,20 @@ namespace K7Mix.Core;
 
 public static class DurationMath
 {
+    /// <summary>
+    /// The length of one pass through the tape. The first track's transition is the
+    /// loop back to the start, and one pass never crosses it, so it is left out.
+    /// </summary>
     public static TimeSpan Timeline(MixDocument mix)
     {
         if (mix.Tracks.Count == 0) return TimeSpan.Zero;
         var total = TimeSpan.Zero;
         for (var i = 0; i < mix.Tracks.Count; i++)
         {
-            total += mix.Tracks[i].Duration;
-            if (i < mix.Tracks.Count - 1)
+            total += mix.Tracks[i].TapeSpan;
+            if (i > 0)
             {
-                var t = mix.Tracks[i].TransitionOut;
+                var t = mix.Tracks[i].TransitionIn;
                 total += t.AddedSilence;
                 total -= t.SubtractedOverlap;
             }
@@ -26,48 +30,56 @@ public static class DurationMath
         var tracks = mix.Tracks;
         if (tracks.Count == 0) return issues;
 
-        for (var i = 0; i < tracks.Count - 1; i++)
+        // Every track owns the boundary that brings playback into it. The first
+        // track's outgoing side is the last track, because that boundary is the
+        // loop back to the start.
+        for (var i = 0; i < tracks.Count; i++)
         {
-            var outgoing = tracks[i];
-            var incoming = tracks[i + 1];
-            var t = outgoing.TransitionOut;
+            var incoming = tracks[i];
+            var outgoing = tracks[i == 0 ? tracks.Count - 1 : i - 1];
+            var t = incoming.TransitionIn;
+            var name = i == 0
+                ? "The loop back to the start"
+                : $"The transition into '{incoming.Title}'";
 
             if (t.Kind == TransitionKind.Crossfade)
             {
                 if (t.Duration > outgoing.Duration)
                 {
                     issues.Error(
-                        $"Crossfade after '{outgoing.Title}' ({t.Duration.TotalSeconds:0.###}s) " +
-                        $"is longer than the outgoing track ({outgoing.Duration.TotalSeconds:0.###}s).");
+                        $"{name} ({t.Duration.TotalSeconds:0.###}s) is longer than the outgoing " +
+                        $"track '{outgoing.Title}' ({outgoing.Duration.TotalSeconds:0.###}s).");
                 }
                 if (t.Duration > incoming.Duration)
                 {
                     issues.Error(
-                        $"Crossfade after '{outgoing.Title}' ({t.Duration.TotalSeconds:0.###}s) " +
-                        $"is longer than the incoming track '{incoming.Title}' " +
-                        $"({incoming.Duration.TotalSeconds:0.###}s).");
+                        $"{name} ({t.Duration.TotalSeconds:0.###}s) is longer than " +
+                        $"'{incoming.Title}' ({incoming.Duration.TotalSeconds:0.###}s).");
                 }
             }
             else if (t.Kind == TransitionKind.FadeOut && t.Duration > outgoing.Duration)
             {
                 issues.Error(
-                    $"Fade-out after '{outgoing.Title}' ({t.Duration.TotalSeconds:0.###}s) " +
-                    $"is longer than that track ({outgoing.Duration.TotalSeconds:0.###}s).");
+                    $"{name} ({t.Duration.TotalSeconds:0.###}s) is longer than the outgoing " +
+                    $"track '{outgoing.Title}' ({outgoing.Duration.TotalSeconds:0.###}s).");
             }
         }
 
-        for (var i = 1; i < tracks.Count - 1; i++)
+        // What the incoming boundary holds at a track's start plus what the outgoing
+        // one holds at its end has to fit inside the track. Now that the tape loops,
+        // the first and last tracks have both halves too.
+        for (var i = 0; i < tracks.Count; i++)
         {
-            var incoming = tracks[i - 1].TransitionOut;
-            var outgoing = tracks[i].TransitionOut;
+            var incoming = tracks[i].TransitionIn;
+            var outgoing = tracks[mix.NextIndex(i)].TransitionIn;
             var incomingHold = IncomingHold(incoming);
             var outgoingHold = OutgoingHold(outgoing);
-            if (incomingHold + outgoingHold > tracks[i].Duration)
+            if (incomingHold + outgoingHold > tracks[i].TapeSpan)
             {
                 issues.Error(
                     $"Transitions overlap on '{tracks[i].Title}': incoming {incoming} and outgoing {outgoing} " +
                     $"need {(incomingHold + outgoingHold).TotalSeconds:0.###}s of a " +
-                    $"{tracks[i].Duration.TotalSeconds:0.###}s track. Shorten one of them.");
+                    $"{tracks[i].TapeSpan.TotalSeconds:0.###}s track. Shorten one of them.");
             }
         }
 

@@ -1,4 +1,4 @@
-# Tekhnexos Markdown import — contract version 1
+# Tekhnexos Markdown import — contract version 2
 
 This contract is independent of the `.k7m` container version. A change to one is not a change to the other.
 
@@ -23,7 +23,7 @@ A **dictionary** export (level-one dictionary title, level-two entry title, leve
 | Tape color | Cassette plastic |
 | Sticker color | Cassette paper label |
 | License | Mix-level licence information |
-| Transitions in csv format | Boundaries from track *i* to *i+1* |
+| Transitions in csv format | One transition per track, the one leading into it |
 | Tracks in csv format | Ordered tracks (extension; see below) |
 | Front artwork | Relative path to front jewel-case art |
 | Back artwork | Relative path to back jewel-case art |
@@ -37,13 +37,15 @@ The imported Markdown is kept as a source snapshot inside the package. After edi
 
 ## Tracks in csv format
 
-Header and rows: `filename,title,codename,license,source`. Row order is playback order. `filename` is required and is resolved inside the Markdown file's folder; paths that leave that folder are rejected. Other cells may be empty. CSV quoting covers commas, quotation marks and embedded line breaks.
+Header and rows: `filename,title,codename,license,source,loop`. Row order is playback order. `filename` is required and is resolved inside the Markdown file's folder; paths that leave that folder are rejected. Other cells may be empty. `loop` is optional and marks a track that plays through twice before the tape moves on; `yes`, `true`, `loop` or `1` turn it on and anything else, including an absent column, leaves it off. CSV quoting covers commas, quotation marks and embedded line breaks.
 
 The supplied Summer bangers export has cassette metadata and no track list. That is valid: import it, then add tracks in K7 Mix.
 
 ## Transitions in csv format
 
-Comma-separated tokens, one per boundary. For *N* tracks there are max(*N*−1, 0) boundaries.
+Comma-separated tokens, one per track, in track order. For *N* tracks there are *N* values: value *i* is the transition **into** track *i*. The first value is therefore the loop back to the start, played when the tape reaches the end of the last track.
+
+Contract version 1 supplied one value per *boundary between* consecutive tracks, max(*N*−1, 0) of them. A file written for version 1 imports without error but its values land one track earlier than intended, so shift them along by one and decide what the loop back should be.
 
 Tokens, after trimming:
 

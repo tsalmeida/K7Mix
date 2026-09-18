@@ -3,14 +3,18 @@ using System.Text;
 namespace K7Mix.Core;
 
 /// <summary>
-/// Tekhnexos Markdown import, contract version 1 — independent of the .k7m
+/// Tekhnexos Markdown import, contract version 2 — independent of the .k7m
 /// container version. A standalone entry uses a level-one heading as the mix
 /// title and level-two headings as fields. A dictionary export (H1 dictionary,
 /// H2 entry title, H3 fields) is accepted when it contains a single entry.
+///
+/// Version 2 changed 'Transitions in csv format' to one value per track, each one
+/// the transition into that track, and added the optional loop column to 'Tracks
+/// in csv format'.
 /// </summary>
 public static class MarkdownImporter
 {
-    public const int ContractVersion = 1;
+    public const int ContractVersion = 2;
 
     public static readonly IReadOnlyList<string> RecognisedFields =
     [
@@ -58,7 +62,6 @@ public static class MarkdownImporter
                 string.Join(", ", parsed.Unknown.Keys) + ".");
         }
 
-        var needed = Math.Max(document.Tracks.Count - 1, 0);
         parsed.Fields.TryGetValue("Transitions in csv format", out var transitionCsv);
         var transitions = TransitionParser.ParseList(transitionCsv, document.Tracks.Count);
         foreach (var issue in transitions.Issues.Items)
@@ -67,8 +70,10 @@ public static class MarkdownImporter
             else issues.Info(issue.Message, issue.Field);
         }
 
-        for (var i = 0; i < needed; i++)
-            document.Tracks[i].TransitionOut = transitions.Transitions[i];
+        // One value per track, in track order: the transition into that track. The
+        // first is the loop back to the start.
+        for (var i = 0; i < document.Tracks.Count; i++)
+            document.Tracks[i].TransitionIn = transitions.Transitions[i];
 
         return new MarkdownImportResult(document, issues, parsed);
     }
@@ -137,6 +142,7 @@ public static class MarkdownImporter
                 Codename = row.Codename,
                 License = row.License,
                 Source = row.Source,
+                Loop = row.Loop,
                 OriginalSourcePath = full,
                 SourceExtension = Path.GetExtension(full),
             });

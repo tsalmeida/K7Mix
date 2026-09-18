@@ -12,8 +12,9 @@ public enum TransitionKind
 }
 
 /// <summary>
-/// The boundary from one track to the next. Stored on the outgoing track.
-/// After a reorder it applies to that track's new successor.
+/// The boundary from one track to the next. Stored on the incoming track, so after
+/// a reorder it stays with the track it leads into. The first track's is the loop
+/// back from the end of the tape.
 /// </summary>
 public sealed record TrackTransition(TransitionKind Kind, TimeSpan Duration)
 {
@@ -79,13 +80,14 @@ public static class TransitionParser
     }
 
     /// <summary>
-    /// Parse the 'Transitions in csv format' field. For N tracks there are
-    /// max(N-1, 0) boundaries. Missing trailing values default to none; excess
-    /// trailing values are ignored. Empty cells between commas are none.
+    /// Parse the 'Transitions in csv format' field. One value per track, in track
+    /// order: value <em>i</em> is the transition into track <em>i</em>, so the first
+    /// is the loop back to the start. Missing trailing values default to none;
+    /// excess trailing values are ignored. Empty cells between commas are none.
     /// </summary>
     public static TransitionImportResult ParseList(string? csv, int trackCount)
     {
-        var needed = Math.Max(trackCount - 1, 0);
+        var needed = Math.Max(trackCount, 0);
         var cells = SplitKeepingEmpties(csv);
         var issues = new MixIssueList();
         var transitions = new List<TrackTransition>(needed);
@@ -93,13 +95,13 @@ public static class TransitionParser
         if (cells.Count < needed)
         {
             issues.Info(
-                $"Transitions in csv format supplied {cells.Count} value(s); " +
-                $"{needed - cells.Count} trailing boundary(ies) defaulted to none.");
+                $"Transitions in csv format supplied {cells.Count} value(s) for {needed} track(s); " +
+                $"{needed - cells.Count} trailing transition(s) defaulted to none.");
         }
         else if (cells.Count > needed)
         {
             issues.Info(
-                $"Transitions in csv format supplied {cells.Count} value(s); " +
+                $"Transitions in csv format supplied {cells.Count} value(s) for {needed} track(s); " +
                 $"{cells.Count - needed} trailing value(s) ignored.");
         }
 

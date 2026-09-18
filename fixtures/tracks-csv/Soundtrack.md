@@ -59,4 +59,4 @@ filename,title,codename,license,source
 
 ## Transitions in csv format
 
-crossfade 0.2s, none
+none, crossfade 0.2s

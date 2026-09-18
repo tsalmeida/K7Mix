@@ -4,7 +4,8 @@ namespace K7Mix.Core;
 
 public static class TrackCsv
 {
-    public static readonly string[] Header = ["filename", "title", "codename", "license", "source"];
+    public static readonly string[] Header =
+        ["filename", "title", "codename", "license", "source", "loop"];
 
     public static IReadOnlyList<TrackCsvRow> Parse(string csv, MixIssueList issues)
     {
@@ -31,7 +32,8 @@ public static class TrackCsv
                 Cell(cells, 1).Trim(),
                 Cell(cells, 2).Trim(),
                 Cell(cells, 3).Trim(),
-                Cell(cells, 4).Trim()));
+                Cell(cells, 4).Trim(),
+                IsLoop(Cell(cells, 5))));
         }
 
         return rows;
@@ -47,10 +49,22 @@ public static class TrackCsv
             sb.Append(Quote(row.Title)).Append(',');
             sb.Append(Quote(row.Codename)).Append(',');
             sb.Append(Quote(row.License)).Append(',');
-            sb.AppendLine(Quote(row.Source));
+            sb.Append(Quote(row.Source)).Append(',');
+            sb.AppendLine(row.Loop ? "yes" : "");
         }
         return sb.ToString();
     }
+
+    /// <summary>
+    /// The loop column is optional and its absence means no loop, so anything that
+    /// is not an affirmative reads as off rather than as an error.
+    /// </summary>
+    private static bool IsLoop(string cell) =>
+        cell.Trim() is var text &&
+        (text.Equals("yes", StringComparison.OrdinalIgnoreCase) ||
+         text.Equals("true", StringComparison.OrdinalIgnoreCase) ||
+         text.Equals("loop", StringComparison.OrdinalIgnoreCase) ||
+         text == "1");
 
     private static bool LooksLikeHeader(IReadOnlyList<string> cells) =>
         cells.Count > 0 && cells[0].Trim().Equals("filename", StringComparison.OrdinalIgnoreCase);
@@ -126,4 +140,5 @@ public sealed record TrackCsvRow(
     string Title,
     string Codename,
     string License,
-    string Source);
+    string Source,
+    bool Loop = false);

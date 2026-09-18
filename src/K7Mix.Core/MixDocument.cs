@@ -19,7 +19,25 @@ public sealed class MixTrack
     public string Source { get; set; } = "";
     public string? LicenseDocumentPath { get; set; }
     public TimeSpan Duration { get; set; }
-    public TrackTransition TransitionOut { get; set; } = TrackTransition.None;
+
+    /// <summary>
+    /// The boundary that brings playback <em>into</em> this track. On the first
+    /// track it is the loop back from the end of the tape, which is the only time
+    /// that boundary is ever crossed.
+    /// </summary>
+    public TrackTransition TransitionIn { get; set; } = TrackTransition.None;
+
+    /// <summary>
+    /// A looping track plays through once more before the tape moves on, so it
+    /// occupies twice its duration. The repeat is seamless: the track restarts at
+    /// zero with no transition, because a transition is a boundary between two
+    /// different tracks and the repeat crosses no such boundary.
+    /// </summary>
+    public bool Loop { get; set; }
+
+    /// <summary>How long this track occupies the tape, counting the repeat.</summary>
+    public TimeSpan TapeSpan => Loop ? Duration + Duration : Duration;
+
     public string? OriginalSourcePath { get; set; }
     public string? PackagedAudioPath { get; set; }
     public string? SourceExtension { get; set; }
@@ -31,7 +49,12 @@ public sealed class MixTrack
 
 public sealed class MixDocument
 {
-    public const int ManifestVersion = 1;
+    /// <summary>
+    /// Version 2 moved each transition from the outgoing track to the incoming one
+    /// and added the per-track loop flag. Version 1 files are migrated on load.
+    /// </summary>
+    public const int ManifestVersion = 2;
+
     public const string FormatName = "k7m";
 
     public string Title { get; set; } = "Untitled mix";
@@ -71,6 +94,13 @@ public sealed class MixDocument
 
     public string SideLabelOf(int trackIndex) =>
         SideOf(trackIndex) == 0 ? EffectiveSideALabel : EffectiveSideBLabel;
+
+    /// <summary>
+    /// The track after this one, wrapping to the first: the tape loops, so the last
+    /// track's successor is the first and there is no dead end.
+    /// </summary>
+    public int NextIndex(int trackIndex) =>
+        Tracks.Count == 0 ? 0 : trackIndex + 1 >= Tracks.Count ? 0 : trackIndex + 1;
 
     public void MoveTrack(int from, int to)
     {
@@ -116,7 +146,8 @@ public sealed class MixDocument
                 Source = track.Source,
                 LicenseDocumentPath = track.LicenseDocumentPath,
                 Duration = track.Duration,
-                TransitionOut = track.TransitionOut,
+                TransitionIn = track.TransitionIn,
+                Loop = track.Loop,
                 OriginalSourcePath = track.OriginalSourcePath,
                 PackagedAudioPath = track.PackagedAudioPath,
                 SourceExtension = track.SourceExtension,

@@ -43,10 +43,13 @@ public class MarkdownImportTests
         Assert.Equal(3, result.Document.SideBStartTrack);
         Assert.Equal(0, result.Document.SideOf(0));
         Assert.Equal(1, result.Document.SideOf(2));
-        Assert.Equal(TransitionKind.Crossfade, result.Document.Tracks[0].TransitionOut.Kind);
-        Assert.Equal(0.2, result.Document.Tracks[0].TransitionOut.Duration.TotalSeconds, 3);
-        Assert.Equal(TransitionKind.None, result.Document.Tracks[1].TransitionOut.Kind);
-        Assert.Equal(TransitionKind.None, result.Document.Tracks[2].TransitionOut.Kind);
+        // One value per track, each the transition into that track: the first is the
+        // loop back to the start, so the crossfade lands on track 2.
+        Assert.Equal(TransitionKind.None, result.Document.Tracks[0].TransitionIn.Kind);
+        Assert.Equal(TransitionKind.Crossfade, result.Document.Tracks[1].TransitionIn.Kind);
+        Assert.Equal(0.2, result.Document.Tracks[1].TransitionIn.Duration.TotalSeconds, 3);
+        Assert.Equal(TransitionKind.None, result.Document.Tracks[2].TransitionIn.Kind);
+        Assert.Equal(TransitionKind.None, result.Document.Tracks[3].TransitionIn.Kind);
         Assert.Contains(result.Issues.Items, i => i.Message.Contains("defaulted to none"));
         Assert.False(result.Issues.HasErrors);
         Assert.True(File.Exists(result.Document.Appearance.FrontArtworkPath));
@@ -62,7 +65,8 @@ public class MarkdownImportTests
         var markdown = File.ReadAllText(TestAudio.Fixture("tracks-csv", "excess-transitions.md"));
         var result = MarkdownImporter.Import(markdown, root);
         Assert.Equal(2, result.Document.Tracks.Count);
-        Assert.Equal(TransitionKind.Silence, result.Document.Tracks[0].TransitionOut.Kind);
+        Assert.Equal(TransitionKind.Silence, result.Document.Tracks[0].TransitionIn.Kind);
+        Assert.Equal(TransitionKind.Crossfade, result.Document.Tracks[1].TransitionIn.Kind);
         Assert.Contains(result.Issues.Items, i => i.Message.Contains("ignored"));
     }
 
@@ -71,10 +75,11 @@ public class MarkdownImportTests
     {
         var issues = new MixIssueList();
         var parsed = TransitionParser.ParseList("crossfade 1s,,silence 2s", 4);
-        Assert.Equal(3, parsed.Transitions.Count);
+        Assert.Equal(4, parsed.Transitions.Count);
         Assert.Equal(TransitionKind.Crossfade, parsed.Transitions[0].Kind);
         Assert.Equal(TransitionKind.None, parsed.Transitions[1].Kind);
         Assert.Equal(TransitionKind.Silence, parsed.Transitions[2].Kind);
+        Assert.Equal(TransitionKind.None, parsed.Transitions[3].Kind);
         Assert.False(parsed.Issues.HasErrors);
     }
 

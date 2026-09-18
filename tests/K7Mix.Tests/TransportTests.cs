@@ -8,8 +8,8 @@ public class TransportTests
     public void Timeline_subtracts_crossfade_and_adds_silence()
     {
         var mix = Mix(3, TimeSpan.FromSeconds(10));
-        mix.Tracks[0].TransitionOut = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(2));
-        mix.Tracks[1].TransitionOut = new TrackTransition(TransitionKind.Silence, TimeSpan.FromSeconds(1));
+        mix.Tracks[1].TransitionIn = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(2));
+        mix.Tracks[2].TransitionIn = new TrackTransition(TransitionKind.Silence, TimeSpan.FromSeconds(1));
         Assert.Equal(29, DurationMath.Timeline(mix).TotalSeconds, 3);
     }
 
@@ -17,8 +17,8 @@ public class TransportTests
     public void Overlapping_transitions_are_errors()
     {
         var mix = Mix(3, TimeSpan.FromSeconds(5));
-        mix.Tracks[0].TransitionOut = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(3));
-        mix.Tracks[1].TransitionOut = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(3));
+        mix.Tracks[1].TransitionIn = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(3));
+        mix.Tracks[2].TransitionIn = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(3));
         var issues = DurationMath.ValidateTransitions(mix);
         Assert.True(issues.HasErrors);
     }
@@ -43,7 +43,7 @@ public class TransportTests
     public void Skip_starts_the_configured_transition()
     {
         var mix = Mix(2, TimeSpan.FromSeconds(10));
-        mix.Tracks[0].TransitionOut = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(2));
+        mix.Tracks[1].TransitionIn = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(2));
         var t = new MixTransport(mix);
         t.PlayPause();
         t.Advance(TimeSpan.FromSeconds(1));
@@ -61,7 +61,7 @@ public class TransportTests
     public void None_transition_skip_is_zero_duration_not_a_gap()
     {
         var mix = Mix(2, TimeSpan.FromSeconds(10));
-        mix.Tracks[0].TransitionOut = TrackTransition.None;
+        mix.Tracks[1].TransitionIn = TrackTransition.None;
         var t = new MixTransport(mix);
         t.PlayPause();
         Assert.True(t.Next());
@@ -74,7 +74,7 @@ public class TransportTests
     public void Automatic_transition_is_not_restarted_by_skip()
     {
         var mix = Mix(2, TimeSpan.FromSeconds(10));
-        mix.Tracks[0].TransitionOut = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(2));
+        mix.Tracks[1].TransitionIn = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(2));
         var t = new MixTransport(mix);
         t.PlayPause();
         t.Advance(TimeSpan.FromSeconds(8.5));
@@ -85,13 +85,114 @@ public class TransportTests
     }
 
     [Fact]
-    public void After_last_track_playback_ends()
+    public void The_end_of_the_tape_loops_back_instead_of_stopping()
     {
+        // Playback used to end after the last track. The tape now wraps, so the
+        // transport stays in Playing and the playhead returns to the first track.
         var mix = Mix(1, TimeSpan.FromSeconds(2));
         var t = new MixTransport(mix);
         t.PlayPause();
         t.Advance(TimeSpan.FromSeconds(2.5));
-        Assert.Equal(TransportState.Stopped, t.State);
+        Assert.Equal(TransportState.Playing, t.State);
+        Assert.Equal(0, t.CurrentTrackIndex);
+    }
+
+    [Fact]
+    public void The_loop_back_uses_the_first_tracks_own_transition()
+    {
+        var mix = Mix(2, TimeSpan.FromSeconds(10));
+        mix.Tracks[0].TransitionIn = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(2));
+        var t = new MixTransport(mix);
+        t.PlayPause();
+
+        // Through the first track and up to where the loop back starts: the
+        // crossfade is held back from the end of the last track, as at any boundary.
+        t.Advance(TimeSpan.FromSeconds(18));
+        Assert.Equal(1, t.CurrentTrackIndex);
+        Assert.True(t.IsTransitioning);
+
+        t.Advance(TimeSpan.FromSeconds(2));
+        Assert.Equal(0, t.CurrentTrackIndex);
+        Assert.False(t.IsTransitioning);
+        Assert.Equal(TransportState.Playing, t.State);
+    }
+
+    [Fact]
+    public void Next_on_the_last_track_wraps_to_the_first()
+    {
+        var mix = Mix(2, TimeSpan.FromSeconds(10));
+        var t = new MixTransport(mix);
+        t.PlayPause();
+        Assert.True(t.Next());
+        Assert.Equal(1, t.CurrentTrackIndex);
+        Assert.True(t.Next());
+        Assert.Equal(0, t.CurrentTrackIndex);
+    }
+
+    [Fact]
+    public void A_looping_track_plays_through_twice_before_the_tape_moves_on()
+    {
+        var mix = Mix(2, TimeSpan.FromSeconds(10));
+        mix.Tracks[0].Loop = true;
+        var t = new MixTransport(mix);
+        t.PlayPause();
+
+        t.Advance(TimeSpan.FromSeconds(9));
+        Assert.Equal(0, t.CurrentTrackIndex);
+        Assert.False(t.OnLoopRepeat);
+
+        // Crossing the end of the first pass restarts the same track. The repeat is
+        // seamless: no transition runs, because no boundary is crossed.
+        t.Advance(TimeSpan.FromSeconds(2));
+        Assert.Equal(0, t.CurrentTrackIndex);
+        Assert.True(t.OnLoopRepeat);
+        Assert.False(t.IsTransitioning);
+        Assert.Equal(1, t.PositionOnTrack.TotalSeconds, 3);
+
+        // The second pass ends at the boundary like any other track.
+        t.Advance(TimeSpan.FromSeconds(9));
+        Assert.Equal(1, t.CurrentTrackIndex);
+        Assert.False(t.OnLoopRepeat);
+    }
+
+    [Fact]
+    public void The_progress_span_covers_both_passes_of_a_looping_track()
+    {
+        var mix = Mix(2, TimeSpan.FromSeconds(10));
+        mix.Tracks[0].Loop = true;
+        var t = new MixTransport(mix);
+        t.PlayPause();
+        Assert.Equal(20, t.CurrentTrackSpan.TotalSeconds, 3);
+        Assert.Equal(0.5, t.LoopMarker);
+
+        // Eleven seconds in, the playhead is one second into the repeat, which reads
+        // as just past the halfway mark rather than snapping back to the left.
+        t.Advance(TimeSpan.FromSeconds(11));
+        Assert.Equal(11, t.PositionInSpan.TotalSeconds, 3);
+        Assert.Equal(1, t.PositionOnTrack.TotalSeconds, 3);
+
+        t.Advance(TimeSpan.FromSeconds(10));
+        Assert.Equal(1, t.CurrentTrackIndex);
+        Assert.Equal(10, t.CurrentTrackSpan.TotalSeconds, 3);
+        Assert.Null(t.LoopMarker);
+    }
+
+    [Fact]
+    public void A_looping_track_counts_twice_towards_the_tape_length()
+    {
+        var mix = Mix(2, TimeSpan.FromSeconds(10));
+        mix.Tracks[0].Loop = true;
+        Assert.Equal(30, DurationMath.Timeline(mix).TotalSeconds, 3);
+    }
+
+    [Fact]
+    public void The_loop_back_is_not_part_of_the_tape_length()
+    {
+        // One pass through the tape never crosses the first track's transition, so
+        // its silence must not be added to the printed length.
+        var mix = Mix(2, TimeSpan.FromSeconds(10));
+        mix.Tracks[0].TransitionIn = new TrackTransition(TransitionKind.Silence, TimeSpan.FromSeconds(5));
+        Assert.Equal(20, DurationMath.Timeline(mix).TotalSeconds, 3);
     }
 
     [Fact]
@@ -113,7 +214,7 @@ public class TransportTests
         mix.Tracks[0].Codename = "forest";
         mix.Tracks[1].Codename = "desert";
         mix.Tracks[2].Codename = "pyramid";
-        mix.Tracks[0].TransitionOut = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(2));
+        mix.Tracks[2].TransitionIn = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(2));
         var t = new MixTransport(mix);
         t.PlayPause();
         Assert.True(t.RequestCodename("pyramid"));
@@ -132,7 +233,7 @@ public class TransportTests
         var mix = Mix(4, TimeSpan.FromSeconds(10));
         mix.Tracks[0].Codename = "forest";
         mix.Tracks[3].Codename = "pyramid";
-        mix.Tracks[3].TransitionOut = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(2));
+        mix.Tracks[0].TransitionIn = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(2));
         var t = new MixTransport(mix);
         t.PlayPause();
         t.Advance(TimeSpan.FromSeconds(35)); // now on the last track
@@ -153,7 +254,7 @@ public class TransportTests
         // the clock: 30s of playback used to land at 23s into track 3 instead of 20s.
         var mix = Mix(3, TimeSpan.FromSeconds(1));
         mix.Tracks[0].Duration = TimeSpan.FromSeconds(10);
-        mix.Tracks[0].TransitionOut = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(4));
+        mix.Tracks[1].TransitionIn = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(4));
         mix.Tracks[2].Duration = TimeSpan.FromSeconds(100);
         var t = new MixTransport(mix);
         t.PlayPause();
@@ -178,7 +279,7 @@ public class TransportTests
         var mix = Mix(3, TimeSpan.FromSeconds(5));
         mix.Tracks[0].Title = "A";
         mix.Tracks[0].Codename = "a";
-        mix.Tracks[0].TransitionOut = new TrackTransition(TransitionKind.Silence, TimeSpan.FromSeconds(1));
+        mix.Tracks[0].TransitionIn = new TrackTransition(TransitionKind.Silence, TimeSpan.FromSeconds(1));
         mix.Tracks[1].Title = "B";
         mix.Tracks[2].Title = "C";
         mix.MoveTrack(0, 2);
@@ -186,14 +287,14 @@ public class TransportTests
         Assert.Equal("C", mix.Tracks[1].Title);
         Assert.Equal("A", mix.Tracks[2].Title);
         Assert.Equal("a", mix.Tracks[2].Codename);
-        Assert.Equal(TransitionKind.Silence, mix.Tracks[2].TransitionOut.Kind);
+        Assert.Equal(TransitionKind.Silence, mix.Tracks[2].TransitionIn.Kind);
     }
 
     [Fact]
     public void Play_pause_and_stop_work_during_a_transition()
     {
         var mix = Mix(2, TimeSpan.FromSeconds(10));
-        mix.Tracks[0].TransitionOut = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(4));
+        mix.Tracks[1].TransitionIn = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(4));
         var t = new MixTransport(mix);
         t.PlayPause();
         t.Next();

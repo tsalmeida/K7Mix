@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -100,6 +101,7 @@ public partial class MainWindow : Window
         }
         UpdateStatus();
         BindSelectedTrack();
+        UpdateNowPlaying();
     }
 
     private void RebuildTracks()
@@ -128,9 +130,13 @@ public partial class MainWindow : Window
     {
         var t = _mix.Tracks[i];
         var side = _mix.SideOf(i) == 0 ? "A" : "B";
-        var trans = i < _mix.Tracks.Count - 1 ? t.TransitionOut.ToToken() : "end";
         var code = string.IsNullOrWhiteSpace(t.Codename) ? "" : $" · {t.Codename}";
-        return $"{i + 1}. [{side}] {t.Title}{code}  {MixValidator.FormatMinutes(t.Duration)}  → {trans}";
+        var loop = t.Loop ? " ×2" : "";
+        // The transition is drawn pointing in, because that is the track it belongs
+        // to. On the first track the arrow curls back: it is the loop to the start.
+        var arrow = i == 0 ? "↩" : "←";
+        return $"{i + 1}. [{side}] {t.Title}{code}{loop}  " +
+               $"{MixValidator.FormatMinutes(t.Duration)}  {arrow} {t.TransitionIn.ToToken()}";
     }
 
     private MixTrack? SelectedTrack()
@@ -152,18 +158,22 @@ public partial class MainWindow : Window
         TrackAudioPathText.Text = track?.OriginalSourcePath is { } p
             ? Path.GetFileName(p)
             : track is null ? "" : "(no audio file set)";
-        var kind = track?.TransitionOut.Kind.ToString().ToLowerInvariant() ?? "none";
-        if (kind == "fadeout") kind = "fadeout";
-        TransitionKindBox.SelectedItem = track?.TransitionOut.Kind switch
+        TrackLoopBox.IsChecked = track?.Loop ?? false;
+        TransitionKindBox.SelectedItem = track?.TransitionIn.Kind switch
         {
             TransitionKind.Crossfade => "crossfade",
             TransitionKind.FadeOut => "fadeout",
             TransitionKind.Silence => "silence",
             _ => "none",
         };
-        TransitionDurationBox.Text = track is null || track.TransitionOut.IsInstant
+        TransitionDurationBox.Text = track is null || track.TransitionIn.IsInstant
             ? ""
-            : track.TransitionOut.Duration.TotalSeconds.ToString("0.###");
+            : track.TransitionIn.Duration.TotalSeconds.ToString("0.###");
+        TransitionHintText.Text = track is null
+            ? ""
+            : TrackList.SelectedIndex == 0
+                ? "This is the loop back to the start, played when the tape reaches the end of the last track."
+                : "Played when the previous track hands over to this one.";
     }
 
     private void ReadMetadata()
@@ -214,6 +224,17 @@ public partial class MainWindow : Window
         UpdateStatus();
     }
 
+    private void OnTrackLoopChanged(object? sender, RoutedEventArgs e)
+    {
+        if (Suppressed) return;
+        var track = _editingTrack;
+        if (track is null) return;
+        track.Loop = TrackLoopBox.IsChecked == true;
+        RebuildTracks();
+        UpdateStatus();
+        UpdateNowPlaying();
+    }
+
     private void OnTransitionChanged(object? sender, SelectionChangedEventArgs e) => ApplyTransition();
 
     private void OnTransitionDurationChanged(object? sender, TextChangedEventArgs e) => ApplyTransition();
@@ -230,9 +251,9 @@ public partial class MainWindow : Window
         try
         {
             if (kindToken == "none")
-                track.TransitionOut = TrackTransition.None;
+                track.TransitionIn = TrackTransition.None;
             else
-                track.TransitionOut = TransitionParser.Parse($"{kindToken} {durationText}s", index);
+                track.TransitionIn = TransitionParser.Parse($"{kindToken} {durationText}s", index);
         }
         catch (MixValidationException)
         {
@@ -605,25 +626,78 @@ public partial class MainWindow : Window
     private void OnPlayerChanged(object? sender, EventArgs e) =>
         Avalonia.Threading.Dispatcher.UIThread.Post(UpdateNowPlaying);
 
+    private void OnProgressSizeChanged(object? sender, SizeChangedEventArgs e) => UpdateProgress();
+
     private void UpdateNowPlaying()
     {
         if (_player is null)
         {
+            NowPlayingTitle.Text = "Nothing playing";
             NowPlayingText.Text = "Stopped.";
+            UpdateProgress();
             return;
         }
-        var t = _player.Transport;
-        var track = t.CurrentTrack;
-        var side = t.DisplayedSide == 0 ? "A" : "B";
-        var extra = t.IsTransitioning ? " · transition running" : "";
         if (!string.IsNullOrWhiteSpace(_player.LastError))
         {
+            NowPlayingTitle.Text = "Nothing playing";
             NowPlayingText.Text = _player.LastError;
+            UpdateProgress();
             return;
         }
-        NowPlayingText.Text = track is null
-            ? "Stopped."
-            : $"Side {side} · {track.Title} · {MixValidator.FormatMinutes(t.PositionOnTrack)}{extra}";
+
+        var t = _player.Transport;
+        var track = t.CurrentTrack;
+        if (track is null)
+        {
+            NowPlayingTitle.Text = "Nothing playing";
+            NowPlayingText.Text = "Stopped.";
+            UpdateProgress();
+            return;
+        }
+
+        var side = t.DisplayedSide == 0 ? "A" : "B";
+        var loop = track.Loop
+            ? t.OnLoopRepeat ? " · repeat" : " · plays twice"
+            : "";
+        var extra = t.IsTransitioning ? " · transition running" : "";
+        NowPlayingTitle.Text = track.Title;
+        NowPlayingText.Text =
+            $"Side {side} · {MixValidator.FormatMinutes(t.PositionInSpan)} " +
+            $"of {MixValidator.FormatMinutes(t.CurrentTrackSpan)}{loop}{extra}";
+        UpdateProgress();
+    }
+
+    /// <summary>
+    /// Draws the playhead across the whole span the current track occupies, so a
+    /// looping track fills one bar over both passes and the mark shows where the
+    /// repeat begins.
+    /// </summary>
+    private void UpdateProgress()
+    {
+        var width = ProgressArea.Bounds.Width;
+        var t = _player?.Transport;
+        if (t?.CurrentTrack is null || width <= 0)
+        {
+            ProgressFill.Width = 0;
+            LoopMark.IsVisible = false;
+            return;
+        }
+
+        var span = t.CurrentTrackSpan;
+        var fraction = span > TimeSpan.Zero
+            ? Math.Clamp(t.PositionInSpan.TotalSeconds / span.TotalSeconds, 0, 1)
+            : 0;
+        ProgressFill.Width = width * fraction;
+
+        if (t.LoopMarker is { } marker)
+        {
+            LoopMark.IsVisible = true;
+            LoopMark.Margin = new Thickness(Math.Clamp(width * marker - 1, 0, width - 2), 0, 0, 0);
+        }
+        else
+        {
+            LoopMark.IsVisible = false;
+        }
     }
 
     private void UpdateStatus()

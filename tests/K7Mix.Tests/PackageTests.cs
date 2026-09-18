@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using System.Text.Json.Nodes;
 using K7Mix.Core;
 
 namespace K7Mix.Tests;
@@ -45,6 +46,60 @@ public class PackageTests
         Assert.Equal("deep-forest", loaded.Tracks[0].Codename);
         Assert.True(File.Exists(loaded.Tracks[0].OriginalSourcePath));
         Assert.False(loaded.Locked);
+    }
+
+    [Fact]
+    public void A_version_1_package_moves_each_transition_onto_the_track_it_leads_into()
+    {
+        var work = Path.Combine(Path.GetTempPath(), "k7mix-v1-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(work);
+        var wav = TestAudio.SineWav(work, "t.wav", 0.3);
+        var mix = new MixDocument { Title = "Legacy" };
+        for (var i = 0; i < 3; i++)
+        {
+            mix.Tracks.Add(new MixTrack
+            {
+                Title = $"T{i + 1}",
+                Duration = TimeSpan.FromSeconds(0.3),
+                OriginalSourcePath = wav,
+            });
+        }
+        var path = Path.Combine(work, "legacy.k7m");
+        K7mPackage.Save(mix, path, lockedCopy: false, new CopyAudioEncoder());
+
+        // Rewrite the manifest the way version 1 wrote it: the boundary stored on
+        // the outgoing track, with the last track's value unused.
+        var outgoing = new[] { "crossfade 0.1s", "silence 0.2s", "none" };
+        using (var zip = ZipFile.Open(path, ZipArchiveMode.Update))
+        {
+            var entry = zip.GetEntry(K7mPackage.ManifestName)!;
+            string json;
+            using (var reader = new StreamReader(entry.Open())) json = reader.ReadToEnd();
+            var node = JsonNode.Parse(json)!;
+            node["formatVersion"] = 1;
+            var tracks = node["tracks"]!.AsArray();
+            for (var i = 0; i < tracks.Count; i++)
+            {
+                var track = tracks[i]!.AsObject();
+                track.Remove("transitionIn");
+                track.Remove("loop");
+                track["transitionOut"] = outgoing[i];
+            }
+            entry.Delete();
+            var rewritten = zip.CreateEntry(K7mPackage.ManifestName);
+            using var writer = new StreamWriter(rewritten.Open());
+            writer.Write(node.ToJsonString());
+        }
+
+        var loaded = K7mPackage.Load(path, Path.Combine(work, "extract"));
+
+        // A version 1 tape did not loop, so the first track's slot stays empty.
+        Assert.Equal(TransitionKind.None, loaded.Tracks[0].TransitionIn.Kind);
+        Assert.Equal(TransitionKind.Crossfade, loaded.Tracks[1].TransitionIn.Kind);
+        Assert.Equal(0.1, loaded.Tracks[1].TransitionIn.Duration.TotalSeconds, 3);
+        Assert.Equal(TransitionKind.Silence, loaded.Tracks[2].TransitionIn.Kind);
+        Assert.Equal(0.2, loaded.Tracks[2].TransitionIn.Duration.TotalSeconds, 3);
+        Assert.All(loaded.Tracks, t => Assert.False(t.Loop));
     }
 
     [Fact]
