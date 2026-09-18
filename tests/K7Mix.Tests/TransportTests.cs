@@ -124,6 +124,45 @@ public class TransportTests
     }
 
     [Fact]
+    public void Codename_request_behind_the_playhead_lands_on_the_requested_track()
+    {
+        // RequestCodename may target a track behind the playhead, so the track index
+        // is not monotonic. Advance walks boundaries iteratively to stay correct for
+        // either direction.
+        var mix = Mix(4, TimeSpan.FromSeconds(10));
+        mix.Tracks[0].Codename = "forest";
+        mix.Tracks[3].Codename = "pyramid";
+        mix.Tracks[3].TransitionOut = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(2));
+        var t = new MixTransport(mix);
+        t.PlayPause();
+        t.Advance(TimeSpan.FromSeconds(35)); // now on the last track
+        Assert.Equal(3, t.CurrentTrackIndex);
+
+        Assert.True(t.RequestCodename("forest"));
+        t.Advance(TimeSpan.FromSeconds(2));
+        Assert.Equal(0, t.CurrentTrackIndex);
+        Assert.False(t.IsTransitioning);
+    }
+
+    [Fact]
+    public void Crossfade_into_a_shorter_track_does_not_invent_playback_time()
+    {
+        // A finished crossfade parks the playhead at the transition duration, which can
+        // sit past a shorter incoming track. That made the remaining time negative and
+        // the leftover larger than the delta that came in, so the playhead ran ahead of
+        // the clock: 30s of playback used to land at 23s into track 3 instead of 20s.
+        var mix = Mix(3, TimeSpan.FromSeconds(1));
+        mix.Tracks[0].Duration = TimeSpan.FromSeconds(10);
+        mix.Tracks[0].TransitionOut = new TrackTransition(TransitionKind.Crossfade, TimeSpan.FromSeconds(4));
+        mix.Tracks[2].Duration = TimeSpan.FromSeconds(100);
+        var t = new MixTransport(mix);
+        t.PlayPause();
+        t.Advance(TimeSpan.FromSeconds(30));
+        Assert.Equal(2, t.CurrentTrackIndex);
+        Assert.Equal(20, t.PositionOnTrack.TotalSeconds, 3);
+    }
+
+    [Fact]
     public void Duplicate_codenames_fail_validation()
     {
         var mix = Mix(2, TimeSpan.FromSeconds(1));

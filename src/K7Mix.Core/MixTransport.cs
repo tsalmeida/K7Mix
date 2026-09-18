@@ -117,14 +117,45 @@ public sealed class MixTransport
     {
         if (_state != TransportState.Playing || !HasTracks || delta <= TimeSpan.Zero) return;
 
+        // Iterative, not recursive. A codename request may target a track behind the
+        // playhead (see skip-behavior.md), so _index is not monotonic and the old
+        // Advance/AdvanceTransition mutual recursion had no bound on its depth. The
+        // step guard counts boundaries crossed, which holds for either direction.
+        var steps = 0;
+        var limit = (_mix.Tracks.Count + 2) * 4;
+        while (delta > TimeSpan.Zero && _state == TransportState.Playing && steps++ < limit)
+            delta = AdvanceStep(delta);
+    }
+
+    /// <summary>
+    /// Consumes as much of <paramref name="delta"/> as fits before the next boundary
+    /// and returns the unconsumed remainder.
+    /// </summary>
+    private TimeSpan AdvanceStep(TimeSpan delta)
+    {
         if (_inTransition)
         {
-            AdvanceTransition(delta);
-            return;
+            var remainingInTransition = _activeTransition.Duration - _transitionElapsed;
+            if (delta >= remainingInTransition)
+            {
+                var leftover = delta - Max(remainingInTransition, TimeSpan.Zero);
+                CompleteTransition();
+                return leftover;
+            }
+            _transitionElapsed += delta;
+            if (_activeTransition.Kind == TransitionKind.Crossfade)
+            {
+                var outgoing = _mix.Tracks[_transitionFrom];
+                _positionOnTrack = outgoing.Duration - _activeTransition.Duration + _transitionElapsed;
+            }
+            return TimeSpan.Zero;
         }
 
         var track = _mix.Tracks[_index];
-        var remaining = track.Duration - _positionOnTrack;
+        // A finished crossfade leaves the playhead at the transition duration, which
+        // can sit past a short incoming track. Clamping keeps the leftover from
+        // growing larger than the delta that came in.
+        var remaining = Max(track.Duration - _positionOnTrack, TimeSpan.Zero);
         var autoAt = AutomaticStartOffset(track);
         var untilAuto = autoAt - _positionOnTrack;
 
@@ -133,8 +164,7 @@ public sealed class MixTransport
             _positionOnTrack = autoAt;
             var leftover = delta - untilAuto;
             BeginTransition(_index, _index + 1, track.TransitionOut, automatic: true);
-            if (leftover > TimeSpan.Zero) AdvanceTransition(leftover);
-            return;
+            return leftover;
         }
 
         if (delta >= remaining)
@@ -143,15 +173,17 @@ public sealed class MixTransport
             if (_index >= _mix.Tracks.Count - 1)
             {
                 Stop();
-                return;
+                return TimeSpan.Zero;
             }
             BeginTransition(_index, _index + 1, track.TransitionOut, automatic: true);
-            if (leftover > TimeSpan.Zero) AdvanceTransition(leftover);
-            return;
+            return leftover;
         }
 
         _positionOnTrack += delta;
+        return TimeSpan.Zero;
     }
+
+    private static TimeSpan Max(TimeSpan a, TimeSpan b) => a > b ? a : b;
 
     public double OutgoingGain()
     {
@@ -196,26 +228,6 @@ public sealed class MixTransport
         _inTransition = true;
         if (transition.Kind == TransitionKind.Silence)
             _positionOnTrack = _mix.Tracks[from].Duration;
-    }
-
-    private void AdvanceTransition(TimeSpan delta)
-    {
-        var remaining = _activeTransition.Duration - _transitionElapsed;
-        if (delta >= remaining)
-        {
-            var leftover = delta - remaining;
-            CompleteTransition();
-            if (leftover > TimeSpan.Zero && _state == TransportState.Playing)
-                Advance(leftover);
-            return;
-        }
-
-        _transitionElapsed += delta;
-        if (_activeTransition.Kind == TransitionKind.Crossfade)
-        {
-            var outgoing = _mix.Tracks[_transitionFrom];
-            _positionOnTrack = outgoing.Duration - _activeTransition.Duration + _transitionElapsed;
-        }
     }
 
     private void CompleteTransition()
