@@ -36,12 +36,15 @@ public partial class CassetteView : UserControl
             // never crashes during layout over a bad font name.
             TitleText.FontFamily = new FontFamily("avares://K7Mix/Assets/Fonts#Roboto");
         }
+        // Pin the text box to the printed label and let it centre itself inside.
+        // The old margin nudged the top down by 4px and left the block stretched,
+        // so the text hung from the top of the sticker instead of sitting on it.
         var label = CassetteRenderer.LabelBounds();
         var w = PlateArea.Width;
         var h = PlateArea.Height;
         TitleText.Margin = new Thickness(
             label.X * w,
-            label.Y * h + 4,
+            label.Y * h,
             w - (label.X + label.Width) * w,
             h - (label.Y + label.Height) * h);
     }

@@ -4,9 +4,14 @@
   <Viewbox Stretch="Uniform">
     <Panel x:Name="PlateArea" Width="480" Height="270">
       <Image x:Name="Plate" Stretch="Uniform" />
+      <!-- Centred in the margin box that Apply sets to the printed label, so one
+           line sits on the middle of the sticker and two lines straddle it. -->
       <TextBlock x:Name="TitleText"
                  TextAlignment="Center"
                  TextWrapping="Wrap"
+                 VerticalAlignment="Center"
+                 HorizontalAlignment="Stretch"
+                 Padding="6,0"
                  FontSize="18" />
     </Panel>
   </Viewbox>
