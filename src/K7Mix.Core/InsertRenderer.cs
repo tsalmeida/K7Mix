@@ -21,6 +21,7 @@ public static class InsertRenderer
             ["textColor"] = mix.Appearance.TextColor.ToHex(),
             ["tapeColor"] = mix.Appearance.TapeColor.ToHex(),
             ["stickerColor"] = mix.Appearance.StickerColor.ToHex(),
+            ["spineInk"] = mix.Appearance.TapeColor.ContrastingInk().ToHex(),
             ["front"] = frontImage,
             ["back"] = backImage,
             ["notice"] = LegalNotice.PackagingDoesNotGrantPermission,

@@ -30,6 +30,16 @@ public static class JewelCaseLayout
     public static double CardWidthMm => FrontWidthMm + SpineWidthMm + BackWidthMm;
     public static double CardHeightMm => FaceHeightMm + FlapMm * 2;
 
+    /// <summary>
+    /// Artwork is cropped to the panel it is printed on, not to one shared shape:
+    /// the front and the back of a J-card are different widths, so a single crop
+    /// would only be cropped again at print time.
+    /// </summary>
+    public const double FrontArtAspect = FrontWidthMm / FaceHeightMm;
+
+    /// <inheritdoc cref="FrontArtAspect"/>
+    public const double BackArtAspect = BackWidthMm / FaceHeightMm;
+
     public static string MeasurementSummary =>
         $"""
         Cassette shell (IEC 60094-1): {CassetteWidthMm} × {CassetteHeightMm} × {CassetteThicknessMm} mm.
@@ -37,7 +47,9 @@ public static class JewelCaseLayout
         J-card face height {FaceHeightMm} mm; front {FrontWidthMm} mm; spine {SpineWidthMm} mm; back {BackWidthMm} mm;
         top and bottom flaps {FlapMm} mm; bleed {BleedMm} mm; safe area {SafeMm} mm inside folds and trim.
         Cassette paper label: {LabelWidthMm} × {LabelHeightMm} mm, one for each side.
-        Front and back artwork is cropped to {FaceAspect:0.000}:1, the cassette face proportion.
+        Front artwork is cropped to {FrontArtAspect:0.000}:1 and back artwork to {BackArtAspect:0.000}:1,
+        each the proportion of the panel it prints on. The crop takes equal amounts off the two
+        longer sides, so the middle of the picture is what survives.
         The cassette sticker (the paper label on the shell) is not the jewel-case insert.
         """;
 }

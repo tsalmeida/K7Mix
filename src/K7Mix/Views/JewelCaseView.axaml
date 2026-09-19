@@ -1,58 +1,66 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="K7Mix.Views.JewelCaseView">
+  <!--
+    The flat J-card as it prints, at two pixels per millimetre, so the preview and
+    the PDF are the same shape: flaps 10 mm, face 64 mm, front 100 mm, spine
+    12.5 mm, back 70 mm. Every panel clips, so artwork set to UniformToFill is
+    centre-cropped on screen exactly as it is centre-cropped in the package.
+  -->
   <Viewbox Stretch="Uniform">
-    <Canvas Width="360" Height="200">
-      <!-- Back of the case, offset -->
-      <Border x:Name="BackPanel"
-              Canvas.Left="48" Canvas.Top="18"
-              Width="250" Height="150"
-              CornerRadius="3"
-              BorderThickness="2"
-              BorderBrush="#88c8d8e8">
+    <Grid Width="365" Height="168"
+          RowDefinitions="20,128,20"
+          ColumnDefinitions="200,25,140">
+
+      <Border x:Name="TopFlap" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" />
+      <Border x:Name="BottomFlap" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" />
+
+      <Border x:Name="FrontPanel" Grid.Row="1" Grid.Column="0" ClipToBounds="True">
+        <Panel>
+          <Image x:Name="FrontArt" Stretch="UniformToFill" />
+          <TextBlock x:Name="FrontTitle"
+                     Classes="heading"
+                     Margin="10"
+                     TextAlignment="Center"
+                     TextWrapping="Wrap"
+                     VerticalAlignment="Center" />
+        </Panel>
+      </Border>
+
+      <Border x:Name="Spine" Grid.Row="1" Grid.Column="1" ClipToBounds="True">
+        <LayoutTransformControl HorizontalAlignment="Center" VerticalAlignment="Center">
+          <LayoutTransformControl.LayoutTransform>
+            <RotateTransform Angle="-90" />
+          </LayoutTransformControl.LayoutTransform>
+          <TextBlock x:Name="SpineText"
+                     FontSize="10"
+                     MaxWidth="120"
+                     TextAlignment="Center"
+                     TextWrapping="NoWrap"
+                     TextTrimming="CharacterEllipsis" />
+        </LayoutTransformControl>
+      </Border>
+
+      <Border x:Name="BackPanel" Grid.Row="1" Grid.Column="2" ClipToBounds="True">
         <Panel>
           <Image x:Name="BackArt" Stretch="UniformToFill" />
           <TextBlock x:Name="BackText"
-                     Margin="10"
                      Classes="caption"
-                     TextWrapping="Wrap" />
+                     Margin="8"
+                     TextWrapping="Wrap"
+                     VerticalAlignment="Top" />
         </Panel>
       </Border>
-      <!-- Spine -->
-      <Border x:Name="Spine"
-              Canvas.Left="28" Canvas.Top="18"
-              Width="22" Height="150"
-              BorderThickness="2,2,0,2"
-              BorderBrush="#88c8d8e8">
-        <TextBlock x:Name="SpineText"
-                   FontSize="11"
-                   TextAlignment="Center"
-                   TextWrapping="Wrap"
-                   VerticalAlignment="Center"
-                   Margin="2" />
-      </Border>
-      <!-- Front, sitting on the spine like a Norelco box -->
-      <Border x:Name="FrontPanel"
-              Canvas.Left="48" Canvas.Top="10"
-              Width="250" Height="150"
-              CornerRadius="3"
-              BorderThickness="2"
-              BorderBrush="#b8dce8f0">
-        <Panel>
-          <Image x:Name="FrontArt" Stretch="UniformToFill" />
-          <StackPanel VerticalAlignment="Center" Margin="12">
-            <TextBlock x:Name="FrontTitle"
-                       Classes="heading"
-                       TextAlignment="Center"
-                       TextWrapping="Wrap" />
-            <TextBlock x:Name="FrontHint"
-                       Classes="caption"
-                       TextAlignment="Center"
-                       Margin="0,6,0,0"
-                       Text="Jewel case (crude)" />
-          </StackPanel>
-        </Panel>
-      </Border>
-    </Canvas>
+
+      <!-- Fold lines, drawn over the panels they separate. -->
+      <Rectangle Grid.Row="1" Grid.Column="0" Width="1"
+                 HorizontalAlignment="Right" Fill="#55000000" />
+      <Rectangle Grid.Row="1" Grid.Column="1" Width="1"
+                 HorizontalAlignment="Right" Fill="#55000000" />
+      <Rectangle Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3" Height="1"
+                 VerticalAlignment="Bottom" Fill="#55000000" />
+      <Rectangle Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Height="1"
+                 VerticalAlignment="Top" Fill="#55000000" />
+    </Grid>
   </Viewbox>
 </UserControl>

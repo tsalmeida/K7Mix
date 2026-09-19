@@ -16,5 +16,8 @@
     <PackageReference Include="NAudio" Version="2.2.1" />
     <PackageReference Include="NAudio.Vorbis" Version="1.5.0" />
     <PackageReference Include="NVorbis" Version="0.10.5" />
+    <!-- Image decoding for artwork cropping. Not a UI dependency: Core stays free
+         of Avalonia, and the app already carries the same native Skia. -->
+    <PackageReference Include="SkiaSharp" Version="3.116.1" />
   </ItemGroup>
 </Project>

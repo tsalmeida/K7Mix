@@ -18,6 +18,7 @@
 #let tape = rgb(data.at("tapeColor", default: "#1E1E22"))
 #let sticker = rgb(data.at("stickerColor", default: "#CDBA9E"))
 #let ink = rgb(data.at("textColor", default: "#000000"))
+#let spine-ink = rgb(data.at("spineInk", default: "#FFFFFF"))
 #let font-id = data.at("font", default: "roboto")
 #let title-font = if font-id == "cousine" { "Cousine" } else if font-id == "rock-salt" { "Rock Salt" } else if font-id == "fixedsys" { "Fixedsys Excelsior 3.01" } else { "Roboto" }
 
@@ -37,13 +38,25 @@
   place(dx: w, dy: h + gap, line(length: arm, angle: 90deg, stroke: 0.2pt))
 }
 
-#let fold-guide(x, h) = {
-  place(dx: x, dy: -2mm, line(length: h + 4mm, angle: 90deg, stroke: (paint: luma(55%), thickness: 0.2pt, dash: "dotted")))
-}
+#let fold-stroke = (paint: luma(55%), thickness: 0.2pt, dash: "dotted")
+#let vfold(x) = place(dx: x, dy: -2mm, line(length: card-h + 4mm, angle: 90deg, stroke: fold-stroke))
+#let hfold(y) = place(dx: -2mm, dy: y, line(length: card-w + 4mm, stroke: fold-stroke))
 
-#let panel(fill, body) = {
-  block(width: 100%, height: 100%, fill: fill, inset: safe, body)
-}
+// Every panel is a clipped box. Typst does not clip overflow on its own, so an
+// image scaled to cover its panel spills across the rest of the card and off the
+// page. Clipping here is what turns "cover" into the same centre crop that the
+// app previews and the package stores.
+#let panel(w, bg, body) = box(width: w, height: face-h, fill: bg, clip: true, body)
+
+#let art-panel(w, path, fallback) = panel(w, sticker, {
+  if path != none {
+    image(path, width: 100%, height: 100%, fit: "cover")
+  } else {
+    fallback
+  }
+})
+
+#let mm-of(len) = str(calc.round(len / 1mm, digits: 2)) + " mm"
 
 #align(center)[
   #text(font: "Roboto Slab", size: 16pt)[K7 Mix insert]
@@ -55,48 +68,63 @@
 
 #align(center, {
   box(width: card-w, height: card-h, {
-    crop-marks(card-w, card-h)
-    fold-guide(front-w, card-h)
-    fold-guide(front-w + spine-w, card-h)
-    fold-guide(0mm, flap)
     // flaps
     place(dx: 0mm, dy: 0mm, rect(width: card-w, height: flap, fill: tape.lighten(70%), stroke: none))
     place(dx: 0mm, dy: flap + face-h, rect(width: card-w, height: flap, fill: tape.lighten(70%), stroke: none))
-    // front
-    place(dx: 0mm, dy: flap, {
-      rect(width: front-w, height: face-h, fill: tape, stroke: none)
-      if data.at("front", default: none) != none {
-        place(image(data.at("front"), width: front-w, height: face-h))
-      } else {
-        place(center + horizon, text(font: title-font, size: 14pt, fill: ink, data.at("title", default: "")))
-      }
-    })
-    // spine
-    place(dx: front-w, dy: flap, {
-      rect(width: spine-w, height: face-h, fill: tape.darken(10%), stroke: none)
-      rotate(-90deg, reflow: true, text(font: title-font, size: 8pt, fill: ink, data.at("title", default: "")))
-    })
+
+    // front — printed paper, so the sticker colour rather than the tape colour,
+    // which used to leave the title as dark ink on a dark panel
+    place(dx: 0mm, dy: flap, art-panel(
+      front-w,
+      data.at("front", default: none),
+      align(center + horizon, text(font: title-font, size: 14pt, fill: ink, data.at("title", default: ""))),
+    ))
+
+    // spine — the one dark panel, so its text takes a colour that reads on it.
+    // The inner box is given the length of the spine before the rotation, or the
+    // title wraps to the 12.5 mm panel width and comes out stacked letter by
+    // letter instead of running along the spine.
+    place(dx: front-w, dy: flap, panel(spine-w, tape, align(center + horizon, rotate(
+      -90deg,
+      reflow: true,
+      box(
+        width: face-h - 2 * safe,
+        align(center, text(
+          font: title-font,
+          size: 8pt,
+          fill: spine-ink,
+          data.at("title", default: ""),
+        )),
+      ),
+    ))))
+
     // back
-    place(dx: front-w + spine-w, dy: flap, {
-      rect(width: back-w, height: face-h, fill: sticker, stroke: none)
-      if data.at("back", default: none) != none {
-        place(image(data.at("back"), width: back-w, height: face-h))
-      } else {
-        block(inset: safe, {
-          set text(font: "Roboto", size: 7pt, fill: ink)
-          text(font: title-font, size: 9pt, data.at("title", default: ""))
-          linebreak()
-          text(data.at("description", default: ""))
-        })
-      }
-    })
+    place(dx: front-w + spine-w, dy: flap, art-panel(
+      back-w,
+      data.at("back", default: none),
+      block(inset: safe, {
+        set text(font: "Roboto", size: 7pt, fill: ink)
+        text(font: title-font, size: 9pt, data.at("title", default: ""))
+        linebreak()
+        text(data.at("description", default: ""))
+      }),
+    ))
+
+    crop-marks(card-w, card-h)
+    vfold(front-w)
+    vfold(front-w + spine-w)
+    hfold(flap)
+    hfold(flap + face-h)
   })
 })
 
 #v(8mm)
 #block(width: 160mm)[
   #set text(size: 9pt)
-  Jewel-case insert, not the cassette sticker. Front #front-w, spine #spine-w, back #back-w, face height #face-h, flaps #flap, safe area #safe. #data.at("notice", default: "")
+  Jewel-case insert, not the cassette sticker. Front #mm-of(front-w), spine #mm-of(spine-w),
+  back #mm-of(back-w), face height #mm-of(face-h), flaps #mm-of(flap), safe area #mm-of(safe).
+  Artwork is cropped from the middle to the shape of the panel it prints on.
+  #data.at("notice", default: "")
 ]
 
 #pagebreak()
@@ -111,10 +139,12 @@
 
 #let cassette-label(side, caption) = {
   box(width: 89mm, height: 43mm, {
-    crop-marks(89mm, 43mm)
-    rect(width: 89mm, height: 43mm, fill: sticker, stroke: 0.4pt + tape)
-    place(dx: 4mm, dy: 5mm, text(font: ("Roboto Condensed", "Roboto"), size: 8pt, fill: ink, "Side " + side))
+    // Placed, not in flow: a rect in the flow pushes everything after it down, so
+    // the side letter used to print below the label instead of inside it.
+    place(dx: 0mm, dy: 0mm, rect(width: 89mm, height: 43mm, fill: sticker, stroke: 0.4pt + tape))
+    place(dx: 4mm, dy: 4mm, text(font: ("Roboto Condensed", "Roboto"), size: 8pt, fill: ink, "Side " + side))
     place(center + horizon, text(font: title-font, size: 13pt, fill: ink, caption))
+    crop-marks(89mm, 43mm)
   })
 }
 

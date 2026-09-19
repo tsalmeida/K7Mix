@@ -5,6 +5,14 @@ namespace K7Mix.Core;
 
 public readonly record struct HexColor(byte R, byte G, byte B)
 {
+    /// <summary>
+    /// Black or white, whichever reads on this colour. Used where text sits on a
+    /// panel the user chose the colour of, such as the J-card spine, so their ink
+    /// colour cannot make the title vanish into the tape colour.
+    /// </summary>
+    public HexColor ContrastingInk() =>
+        (R * 77 + G * 151 + B * 28) >> 8 < 130 ? new HexColor(255, 255, 255) : new HexColor(0, 0, 0);
+
     private static readonly Regex Pattern = new(
         @"^#(?:[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})$",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);

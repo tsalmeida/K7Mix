@@ -150,8 +150,10 @@ public static class K7mPackage
             track.EncodedProfile = PlaybackProfile.Id;
         }
 
-        mix.Appearance.FrontArtworkPath = PackOptionalImage(zip, mix.Appearance.FrontArtworkPath, "artwork/front.png");
-        mix.Appearance.BackArtworkPath = PackOptionalImage(zip, mix.Appearance.BackArtworkPath, "artwork/back.png");
+        mix.Appearance.FrontArtworkPath = PackOptionalImage(
+            zip, mix.Appearance.FrontArtworkPath, "artwork/front.png", JewelCaseLayout.FrontArtAspect);
+        mix.Appearance.BackArtworkPath = PackOptionalImage(
+            zip, mix.Appearance.BackArtworkPath, "artwork/back.png", JewelCaseLayout.BackArtAspect);
 
         if (!string.IsNullOrWhiteSpace(mix.LicenseDocumentPath) && File.Exists(mix.LicenseDocumentPath))
         {
@@ -170,10 +172,16 @@ public static class K7mPackage
         }
     }
 
-    private static string? PackOptionalImage(ZipArchive zip, string? path, string dest)
+    /// <summary>
+    /// Packs artwork already cropped to the panel it prints on, so the package and
+    /// the printed insert agree and nothing downstream has to guess at the framing.
+    /// Cropping an image that is already at the target proportion keeps all of it,
+    /// which is what makes re-saving a package leave the artwork alone.
+    /// </summary>
+    private static string? PackOptionalImage(ZipArchive zip, string? path, string dest, double aspect)
     {
         if (string.IsNullOrWhiteSpace(path) || !File.Exists(path)) return null;
-        WriteBytes(zip, dest, File.ReadAllBytes(path));
+        WriteBytes(zip, dest, ArtworkCrop.CropToPng(path, aspect));
         return dest;
     }
 
