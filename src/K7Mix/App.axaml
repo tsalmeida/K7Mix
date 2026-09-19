@@ -15,6 +15,10 @@
         </ResourceDictionary>
       </ResourceDictionary.ThemeDictionaries>
       <SolidColorBrush x:Key="TkxAccent" Color="#fe9a00" />
+
+      <!-- Font Awesome 6 Pro Solid, the same kit Eikonotheke catalogues. Buttons
+           wear the glyph; the codepoints are listed by name in Views/Icons.cs. -->
+      <FontFamily x:Key="K7Icons">avares://K7Mix/Assets/Icons#Font Awesome 6 Pro Solid</FontFamily>
     </ResourceDictionary>
   </Application.Resources>
 

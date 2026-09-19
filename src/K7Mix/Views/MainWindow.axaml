@@ -12,6 +12,16 @@
         Background="{DynamicResource TkxPage}"
         WindowStartupLocation="CenterScreen">
 
+  <Window.Styles>
+    <!-- Design.axaml is the shared standard and is copied whole, so the icon face
+         is set up here instead of being added to it. -->
+    <Style Selector="TextBlock.icon">
+      <Setter Property="FontFamily" Value="{StaticResource K7Icons}" />
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+  </Window.Styles>
+
   <Border Classes="page">
     <DockPanel Margin="12">
       <Border DockPanel.Dock="Top" Classes="section bar" Margin="0,0,0,12">
@@ -21,12 +31,42 @@
             <TextBlock Classes="caption" Text="Cassette mixes" VerticalAlignment="Center" />
           </StackPanel>
           <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
-            <Button Classes="pill lime" Content="New" Click="OnNewClick" />
-            <Button Classes="pill amber" Content="Import Markdown" Click="OnImportClick" />
-            <Button Classes="pill amber" Content="Open" Click="OnOpenClick" />
-            <Button Classes="pill lime" Content="Save" Click="OnSaveClick" />
-            <Button Classes="pill green" Content="Save locked copy" Click="OnSaveLockedClick" />
-            <Button Classes="pill pink" Content="Print insert" Click="OnPrintClick" />
+            <Button Classes="pill lime" Click="OnNewClick">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Classes="icon" Text="&#xf15b;" />
+                <TextBlock Text="New" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+            <Button Classes="pill amber" Click="OnImportClick">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Classes="icon" Text="&#xf56f;" />
+                <TextBlock Text="Import Markdown" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+            <Button Classes="pill amber" Click="OnOpenClick">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Classes="icon" Text="&#xf07c;" />
+                <TextBlock Text="Open" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+            <Button Classes="pill lime" Click="OnSaveClick">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Classes="icon" Text="&#xf0c7;" />
+                <TextBlock Text="Save" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+            <Button Classes="pill green" Click="OnSaveLockedClick">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Classes="icon" Text="&#xf023;" />
+                <TextBlock Text="Save locked copy" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
+            <Button Classes="pill pink" Click="OnPrintClick">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Classes="icon" Text="&#xf02f;" />
+                <TextBlock Text="Print insert" VerticalAlignment="Center" />
+              </StackPanel>
+            </Button>
           </StackPanel>
         </Grid>
       </Border>
@@ -55,6 +95,8 @@
               <StackPanel Spacing="8">
                 <TextBlock Classes="heading" Text="Jewel case" />
                 <views:JewelCaseView x:Name="CaseView" Height="170" />
+                <TextBlock Classes="caption" TextWrapping="Wrap"
+                           Text="The J-card as it prints: front, spine and back, with the fold lines. Artwork is cropped from the middle to fit each panel. Print insert writes the PDF at actual size." />
               </StackPanel>
             </Border>
             <Border Classes="section">
@@ -63,9 +105,21 @@
                 <TextBlock Classes="caption" TextWrapping="Wrap"
                            Text="Skip honours the transition. That cannot be turned off. At the end, the tape loops back to track 1." />
                 <StackPanel Orientation="Horizontal" Spacing="6">
-                  <Button Classes="pill lime" Content="Play / Pause" Click="OnPlayPauseClick" />
-                  <Button Classes="pill orange" Content="Stop" Click="OnStopClick" />
-                  <Button Classes="pill amber" Content="Next" Click="OnNextClick" />
+                  <!-- The glyph on this one follows the transport: play when it is
+                       not playing, pause when it is. See UpdateNowPlaying. -->
+                  <Button Classes="pill lime" Click="OnPlayPauseClick"
+                          ToolTip.Tip="Play / Pause"
+                          AutomationProperties.Name="Play / Pause">
+                    <TextBlock x:Name="PlayPauseIcon" Classes="icon" Text="&#xf04b;" />
+                  </Button>
+                  <Button Classes="pill orange" Click="OnStopClick"
+                          ToolTip.Tip="Stop" AutomationProperties.Name="Stop">
+                    <TextBlock Classes="icon" Text="&#xf04d;" />
+                  </Button>
+                  <Button Classes="pill amber" Click="OnNextClick"
+                          ToolTip.Tip="Next track" AutomationProperties.Name="Next track">
+                    <TextBlock Classes="icon" Text="&#xf051;" />
+                  </Button>
                 </StackPanel>
                 <TextBlock x:Name="NowPlayingTitle" Classes="subheading"
                            TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" />
@@ -97,10 +151,22 @@
               <Grid ColumnDefinitions="*,Auto">
                 <TextBlock Classes="heading" Text="Tracks" VerticalAlignment="Center" />
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
-                  <Button Classes="pill lime" Content="Add" Click="OnAddTracksClick" />
-                  <Button Classes="pill amber" Content="Up" Click="OnMoveUpClick" />
-                  <Button Classes="pill amber" Content="Down" Click="OnMoveDownClick" />
-                  <Button Classes="pill orange" Content="Remove" Click="OnRemoveTrackClick" />
+                  <Button Classes="pill lime" Click="OnAddTracksClick"
+                          ToolTip.Tip="Add tracks" AutomationProperties.Name="Add tracks">
+                    <TextBlock Classes="icon" Text="&#x2b;" />
+                  </Button>
+                  <Button Classes="pill amber" Click="OnMoveUpClick"
+                          ToolTip.Tip="Move up" AutomationProperties.Name="Move up">
+                    <TextBlock Classes="icon" Text="&#xf062;" />
+                  </Button>
+                  <Button Classes="pill amber" Click="OnMoveDownClick"
+                          ToolTip.Tip="Move down" AutomationProperties.Name="Move down">
+                    <TextBlock Classes="icon" Text="&#xf063;" />
+                  </Button>
+                  <Button Classes="pill orange" Click="OnRemoveTrackClick"
+                          ToolTip.Tip="Remove track" AutomationProperties.Name="Remove track">
+                    <TextBlock Classes="icon" Text="&#xf1f8;" />
+                  </Button>
                 </StackPanel>
               </Grid>
               <TextBlock Classes="caption" TextWrapping="Wrap"
@@ -162,10 +228,24 @@
                     <TextBox x:Name="TextColorBox" TextChanged="OnMetadataChanged" />
                   </StackPanel>
                 </Grid>
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                  <Button Classes="pill amber" Content="Front artwork" Click="OnFrontArtClick" />
-                  <Button Classes="pill amber" Content="Back artwork" Click="OnBackArtClick" />
-                </StackPanel>
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="6">
+                  <Button Classes="pill amber" Click="OnFrontArtClick"
+                          HorizontalAlignment="Stretch"
+                          ToolTip.Tip="Choose the picture for the front of the jewel case">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <TextBlock Classes="icon" Text="&#xf03e;" />
+                      <TextBlock Text="Front" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Button>
+                  <Button Grid.Column="1" Classes="pill amber" Click="OnBackArtClick"
+                          HorizontalAlignment="Stretch"
+                          ToolTip.Tip="Choose the picture for the back of the jewel case">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <TextBlock Classes="icon" Text="&#xf03e;" />
+                      <TextBlock Text="Back" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Button>
+                </Grid>
               </StackPanel>
             </Border>
             <Border Classes="section">
@@ -186,7 +266,12 @@
                              TextWrapping="NoWrap"
                              TextTrimming="CharacterEllipsis"
                              VerticalAlignment="Center" />
-                  <Button Grid.Column="1" Classes="pill amber" Content="Set audio file…" Click="OnSetAudioFileClick" />
+                  <Button Grid.Column="1" Classes="pill amber" Click="OnSetAudioFileClick">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <TextBlock Classes="icon" Text="&#xf001;" />
+                      <TextBlock Text="Set audio file…" VerticalAlignment="Center" />
+                    </StackPanel>
+                  </Button>
                 </Grid>
                 <CheckBox x:Name="TrackLoopBox"
                           Content="Play this track twice before moving on"

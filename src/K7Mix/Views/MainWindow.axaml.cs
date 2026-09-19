@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Avalonia.Threading;
 using K7Mix.Core;
 
 namespace K7Mix.Views;
@@ -17,6 +18,11 @@ public partial class MainWindow : Window
     private int _suppressDepth;
     private string? _extractFolder;
     private readonly ObservableCollection<TrackRow> _trackRows = [];
+
+    private readonly DispatcherTimer _tick = new()
+    {
+        Interval = TimeSpan.FromMilliseconds(100),
+    };
 
     /// <summary>
     /// The track the right-hand editors currently hold the text of. Avalonia raises
@@ -74,8 +80,10 @@ public partial class MainWindow : Window
             }
             Bind();
         };
+        _tick.Tick += OnTick;
         Closed += (_, _) =>
         {
+            _tick.Stop();
             _player?.Dispose();
         };
     }
@@ -621,6 +629,20 @@ public partial class MainWindow : Window
         _player ??= new MixPlayer(_mix);
         _player.Changed -= OnPlayerChanged;
         _player.Changed += OnPlayerChanged;
+        _tick.Start();
+    }
+
+    /// <summary>
+    /// Drives the progress bar. MixPlayer raises Changed only when the track or the
+    /// transition state changes, which is right for a player but leaves the bar
+    /// frozen for the length of a track and then jumping when playback is paused.
+    /// Polling the transport from the UI thread keeps the bar moving without
+    /// posting twenty cross-thread updates a second from the audio clock.
+    /// </summary>
+    private void OnTick(object? sender, EventArgs e)
+    {
+        if (_player?.Transport.IsPlaying != true) return;
+        UpdateNowPlaying();
     }
 
     private void OnPlayerChanged(object? sender, EventArgs e) =>
@@ -630,6 +652,7 @@ public partial class MainWindow : Window
 
     private void UpdateNowPlaying()
     {
+        PlayPauseIcon.Text = _player?.Transport.IsPlaying == true ? Icons.Pause : Icons.Play;
         if (_player is null)
         {
             NowPlayingTitle.Text = "Nothing playing";
