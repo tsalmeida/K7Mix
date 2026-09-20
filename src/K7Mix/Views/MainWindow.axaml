@@ -260,7 +260,7 @@
                 <TextBlock Classes="caption" Text="Source" />
                 <TextBox x:Name="TrackSourceBox" TextChanged="OnTrackFieldsChanged" />
                 <TextBlock Classes="caption" Text="Audio file" />
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="6">
+                <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="6">
                   <TextBlock x:Name="TrackAudioPathText"
                              Classes="caption mono"
                              TextWrapping="NoWrap"
@@ -272,6 +272,20 @@
                       <TextBlock Text="Set audio file…" VerticalAlignment="Center" />
                     </StackPanel>
                   </Button>
+                  <Button x:Name="AudioOpenButton" Grid.Column="2" Classes="pill amber"
+                          Click="OnOpenTrackAudioClick"
+                          ToolTip.Tip="Open the audio file with its default application"
+                          AutomationProperties.Name="Open audio file"
+                          IsEnabled="False">
+                    <TextBlock Classes="icon" Text="&#xf144;" />
+                  </Button>
+                  <Button x:Name="AudioFolderButton" Grid.Column="3" Classes="pill amber"
+                          Click="OnOpenTrackAudioFolderClick"
+                          ToolTip.Tip="Open the audio file's folder in the default file manager"
+                          AutomationProperties.Name="Open audio file folder"
+                          IsEnabled="False">
+                    <TextBlock Classes="icon" Text="&#xf07c;" />
+                  </Button>
                 </Grid>
                 <CheckBox x:Name="TrackLoopBox"
                           Content="Play this track twice before moving on"
@@ -281,7 +295,14 @@
                 <ComboBox x:Name="TransitionKindBox" SelectionChanged="OnTransitionChanged" />
                 <TextBlock Classes="caption" Text="Duration in seconds" />
                 <TextBox x:Name="TransitionDurationBox" TextChanged="OnTransitionDurationChanged" />
-                <Button Classes="pill lime" Content="This track starts side B" Click="OnSideBHereClick" />
+                <Button Classes="pill lime" Click="OnSideBHereClick"
+                        ToolTip.Tip="Make this track the first track on side B"
+                        AutomationProperties.Name="This track starts side B">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Classes="icon" Text="&#xf024;" />
+                    <TextBlock Text="This track starts side B" VerticalAlignment="Center" />
+                  </StackPanel>
+                </Button>
               </StackPanel>
             </Border>
           </StackPanel>

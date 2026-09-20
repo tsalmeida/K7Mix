@@ -166,6 +166,10 @@ public partial class MainWindow : Window
         TrackAudioPathText.Text = track?.OriginalSourcePath is { } p
             ? Path.GetFileName(p)
             : track is null ? "" : "(no audio file set)";
+        var audioPath = track?.OriginalSourcePath;
+        var audioExists = audioPath is not null && File.Exists(audioPath);
+        AudioOpenButton.IsEnabled = audioExists;
+        AudioFolderButton.IsEnabled = audioExists;
         TrackLoopBox.IsChecked = track?.Loop ?? false;
         TransitionKindBox.SelectedItem = track?.TransitionIn.Kind switch
         {
@@ -520,6 +524,36 @@ public partial class MainWindow : Window
         catch (Exception ex)
         {
             StatusText.Text = $"{Path.GetFileName(path)}: {ex.Message}";
+        }
+    }
+
+    private void OnOpenTrackAudioClick(object? sender, RoutedEventArgs e)
+    {
+        var path = SelectedTrack()?.OriginalSourcePath;
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path)) return;
+        try
+        {
+            ShellOpen.Path(path);
+        }
+        catch (Exception ex)
+        {
+            AppLog.Error("Opening audio file", ex);
+            StatusText.Text = ex.Message;
+        }
+    }
+
+    private void OnOpenTrackAudioFolderClick(object? sender, RoutedEventArgs e)
+    {
+        var path = SelectedTrack()?.OriginalSourcePath;
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path)) return;
+        try
+        {
+            ShellOpen.ContainingFolder(path);
+        }
+        catch (Exception ex)
+        {
+            AppLog.Error("Opening audio file folder", ex);
+            StatusText.Text = ex.Message;
         }
     }
 
