@@ -33,7 +33,7 @@ public static class Palette
     public static readonly Hue Blue = new("blue", C("#eff6ff"), C("#dbeafe"), C("#8ec5ff"), C("#2b7fff"), C("#155dfc"), C("#162456"));
     public static readonly Hue Green = new("green", C("#f0fdf4"), C("#dcfce7"), C("#7bf1a8"), C("#00c950"), C("#00a63e"), C("#032e15"));
     public static readonly Hue Pink = new("pink", C("#fdf2f8"), C("#fce7f3"), C("#fda5d5"), C("#f6339a"), C("#e60076"), C("#510424"));
-    public static readonly Hue Amber = new("amber", C("#fffbeb"), C("#fef3c6"), C("#ffd230"), C("#fe9a00"), C("#d08700"), C("#461901"));
+    public static readonly Hue Amber = new("amber", C("#fffbeb"), C("#fef3c6"), C("#ffd230"), C("#fe9a00"), C("#e17100"), C("#461901"));
     public static readonly Hue Purple = new("purple", C("#faf5ff"), C("#f3e8ff"), C("#dab2ff"), C("#ad46ff"), C("#9810fa"), C("#3c0366"));
     public static readonly Hue Emerald = new("emerald", C("#ecfdf5"), C("#d0fae5"), C("#5ee9b5"), C("#00bc7d"), C("#009966"), C("#002c22"));
     public static readonly Hue Teal = new("teal", C("#f0fdfa"), C("#cbfbf1"), C("#46ecd5"), C("#00bba7"), C("#009689"), C("#022f2e"));
@@ -60,7 +60,7 @@ public static class Palette
     public static readonly Hue Lime = new("lime", C("#f7fee7"), C("#ecfcca"), C("#bbf451"), C("#7ccf00"), C("#5ea500"), C("#192e03"));
     public static readonly Hue Orange = new("orange", C("#fff7ed"), C("#ffedd4"), C("#ffb86a"), C("#ff6900"), C("#f54900"), C("#441306"));
 
-    /// <summary>K7 Mix's identity colour (rose-600) — the icon, and nothing else.</summary>
+    /// <summary>K7Mix's identity colour (rose-600) — the icon, and nothing else.</summary>
     public static readonly Color Identity = C("#ec003f");
 
     // The page — light

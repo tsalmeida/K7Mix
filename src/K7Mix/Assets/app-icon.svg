@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
-  <!-- Tekhnexos mark (GenerateFavicons stroke-width 6), rose field for K7 Mix -->
+  <!-- Tekhnexos mark, rose field (Tailwind rose-600 #ec003f) for K7Mix. -->
   <rect width="100" height="100" fill="#ec003f" />
   <path d="M25 50 L75 50" stroke="white" stroke-width="6" />
   <path d="M50 25 L50 75" stroke="white" stroke-width="6" />

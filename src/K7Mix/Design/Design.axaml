@@ -157,7 +157,7 @@
       <SolidColorBrush x:Key="TkxPink" Color="#f6339a" />
       <SolidColorBrush x:Key="TkxPinkDeep" Color="#e60076" />
       <SolidColorBrush x:Key="TkxAmber" Color="#fe9a00" />
-      <SolidColorBrush x:Key="TkxAmberDeep" Color="#d08700" />
+      <SolidColorBrush x:Key="TkxAmberDeep" Color="#e17100" />
       <SolidColorBrush x:Key="TkxPurple" Color="#ad46ff" />
       <SolidColorBrush x:Key="TkxPurpleDeep" Color="#9810fa" />
       <SolidColorBrush x:Key="TkxEmerald" Color="#00bc7d" />
