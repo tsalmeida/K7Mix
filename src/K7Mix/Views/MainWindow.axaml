@@ -20,6 +20,41 @@
       <Setter Property="FontSize" Value="16" />
       <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
+    <!-- An icon wears its pill's hue at 500, as the companion standard asks: the
+         colour names the action at rest, and the whole pill lights up on hover. -->
+    <Style Selector="Button.pill.indigo TextBlock.icon">
+      <Setter Property="Foreground" Value="{StaticResource TkxIndigo}" />
+    </Style>
+    <Style Selector="Button.pill.cyan TextBlock.icon">
+      <Setter Property="Foreground" Value="{StaticResource TkxCyan}" />
+    </Style>
+    <Style Selector="Button.pill.blue TextBlock.icon">
+      <Setter Property="Foreground" Value="{StaticResource TkxBlue}" />
+    </Style>
+    <Style Selector="Button.pill.green TextBlock.icon">
+      <Setter Property="Foreground" Value="{StaticResource TkxGreen}" />
+    </Style>
+    <Style Selector="Button.pill.pink TextBlock.icon">
+      <Setter Property="Foreground" Value="{StaticResource TkxPink}" />
+    </Style>
+    <Style Selector="Button.pill.amber TextBlock.icon">
+      <Setter Property="Foreground" Value="{StaticResource TkxAmber}" />
+    </Style>
+    <Style Selector="Button.pill.purple TextBlock.icon">
+      <Setter Property="Foreground" Value="{StaticResource TkxPurple}" />
+    </Style>
+    <Style Selector="Button.pill.emerald TextBlock.icon">
+      <Setter Property="Foreground" Value="{StaticResource TkxEmerald}" />
+    </Style>
+    <Style Selector="Button.pill.teal TextBlock.icon">
+      <Setter Property="Foreground" Value="{StaticResource TkxTeal}" />
+    </Style>
+    <Style Selector="Button.pill.lime TextBlock.icon">
+      <Setter Property="Foreground" Value="{StaticResource TkxLime}" />
+    </Style>
+    <Style Selector="Button.pill.orange TextBlock.icon">
+      <Setter Property="Foreground" Value="{StaticResource TkxOrange}" />
+    </Style>
   </Window.Styles>
 
   <Border Classes="page">
