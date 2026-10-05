@@ -26,4 +26,4 @@ The front and back panels are different widths, so each is cropped to its own pr
 
 The Typst PDF is exported at actual size with crop marks. Print at 100 %, no "fit to page". Without artwork the insert uses the sticker colour, title and font, with the tape colour on the spine.
 
-Title font identifiers are the same four used on the on-screen cassette and in Running Wild: `cousine`, `roboto`, `rock-salt`, `fixedsys`.
+Title font identifiers are the same four used on the on-screen cassette and in Running Wild: `cousine`, `roboto`, `rock-salt`, `fixedsys`. Any other identifier is a standard Logarktos font; the insert sets it by the `fontFamily` the data carries, with Roboto behind it.

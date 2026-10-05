@@ -18,7 +18,7 @@ A **dictionary** export (level-one dictionary title, level-two entry title, leve
 | Link | Mix source URL |
 | Text for side A | Side A label (falls back to the mix title when blank) |
 | Text for side B | Side B label (falls back to the mix title when blank) |
-| Font | Cassette title face: Cousine, Roboto, Rock Salt, Fixedsys |
+| Font | Cassette title face: Cousine, Roboto, Rock Salt, Fixedsys, or any standard Logarktos font by family name (`L:\Sync\logarktos-fonts.json`) |
 | Text color | Title ink, `#RGB` or `#RRGGBB` |
 | Tape color | Cassette plastic |
 | Sticker color | Cassette paper label |

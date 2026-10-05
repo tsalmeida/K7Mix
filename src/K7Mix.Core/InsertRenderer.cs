@@ -18,6 +18,7 @@ public static class InsertRenderer
             ["sideA"] = mix.EffectiveSideALabel,
             ["sideB"] = mix.EffectiveSideBLabel,
             ["font"] = mix.Appearance.Font.Id,
+            ["fontFamily"] = mix.Appearance.Font.FamilyName,
             ["textColor"] = mix.Appearance.TextColor.ToHex(),
             ["tapeColor"] = mix.Appearance.TapeColor.ToHex(),
             ["stickerColor"] = mix.Appearance.StickerColor.ToHex(),

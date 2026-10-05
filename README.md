@@ -47,7 +47,7 @@ Each mix has:
 - a title, drawn in one of four bundled faces: **Cousine**, **Roboto**, **Rock Salt**, **Fixedsys**
 - optional front and back artwork, cropped to the cassette-face proportion (100.4 × 63.8 mm, IEC 60094-1)
 
-Those identifiers, font files and measurements are shared with Running Wild so a title looks the same in the app, in the game, and on the printed insert. The cassette sticker is not the jewel-case insert.
+Those identifiers, font files and measurements are shared with Running Wild so a title looks the same in the app, in the game, and on the printed insert. After the four bundled faces (Cousine, Roboto, Rock Salt, Fixedsys) the Font list holds every standard Logarktos font from `L:\Sync\logarktos-fonts.json`, installed for the user by `L:\Sync\Install-LogarktosFonts.ps1`. Those are set by family name on screen and on the insert, the package records the family beside the id so the mix opens on a computer without the catalog, and a game that does not carry the face shows the title in Roboto. The cassette sticker is not the jewel-case insert.
 
 Print **Print insert** for a Typst PDF at actual size, with crop marks, folds, spine, safe areas, J-card and the two cassette labels.
 

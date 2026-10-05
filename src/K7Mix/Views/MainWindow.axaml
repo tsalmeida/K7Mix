@@ -248,7 +248,8 @@
               <StackPanel Spacing="8">
                 <TextBlock Classes="heading" Text="Appearance" />
                 <TextBlock Classes="caption" Text="Font" />
-                <ComboBox x:Name="FontBox" SelectionChanged="OnFontChanged" />
+                <ComboBox x:Name="FontBox" SelectionChanged="OnFontChanged"
+                          ToolTip.Tip="Cousine, Roboto, Rock Salt and Fixedsys are bundled and play in the games. The rest are the standard Logarktos fonts: set by name here and on the insert, shown as Roboto by a game that does not have them." />
                 <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
                   <StackPanel>
                     <TextBlock Classes="caption" Text="Tape color" />

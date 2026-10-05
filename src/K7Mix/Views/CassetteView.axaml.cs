@@ -49,11 +49,16 @@ public partial class CassetteView : UserControl
             h - (label.Y + label.Height) * h);
     }
 
+    /// <summary>
+    /// A bundled face comes from the app's assets; a standard Logarktos face is
+    /// the one installed on this computer, with Roboto behind it when it is not.
+    /// </summary>
     internal static FontFamily FontFor(CassetteFont font) => font.Id switch
     {
         "cousine" => new FontFamily("avares://K7Mix/Assets/TitleFonts#Cousine"),
         "rock-salt" => new FontFamily("avares://K7Mix/Assets/TitleFonts#Rock Salt"),
         "fixedsys" => new FontFamily("avares://K7Mix/Assets/TitleFonts#Fixedsys Excelsior"),
+        _ when !font.Bundled => new FontFamily($"{font.ScreenFamily ?? font.FamilyName}, avares://K7Mix/Assets/Fonts#Roboto"),
         _ => new FontFamily("avares://K7Mix/Assets/Fonts#Roboto"),
     };
 }

@@ -20,7 +20,8 @@
 #let ink = rgb(data.at("textColor", default: "#000000"))
 #let spine-ink = rgb(data.at("spineInk", default: "#FFFFFF"))
 #let font-id = data.at("font", default: "roboto")
-#let title-font = if font-id == "cousine" { "Cousine" } else if font-id == "rock-salt" { "Rock Salt" } else if font-id == "fixedsys" { "Fixedsys Excelsior 3.01" } else { "Roboto" }
+// The four bundled faces by id; a standard Logarktos face by its family name, falling back to Roboto.
+#let title-font = if font-id == "cousine" { "Cousine" } else if font-id == "rock-salt" { "Rock Salt" } else if font-id == "fixedsys" { "Fixedsys Excelsior" } else if font-id == "roboto" { "Roboto" } else { (data.at("fontFamily", default: "Roboto"), "Roboto") }
 
 #set page(width: 210mm, height: 297mm, margin: 12mm)
 #set text(font: "Roboto", size: 10pt, fill: luma(12%))

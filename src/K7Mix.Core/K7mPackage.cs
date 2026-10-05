@@ -243,6 +243,8 @@ internal sealed class ManifestDto
         Appearance = new AppearanceDto
         {
             Font = mix.Appearance.Font.Id,
+            FontFamily = mix.Appearance.Font.Bundled ? null : mix.Appearance.Font.FamilyName,
+            FontScreenFamily = mix.Appearance.Font.Bundled ? null : mix.Appearance.Font.ScreenFamily,
             TextColor = mix.Appearance.TextColor.ToHex(),
             TapeColor = mix.Appearance.TapeColor.ToHex(),
             StickerColor = mix.Appearance.StickerColor.ToHex(),
@@ -281,7 +283,11 @@ internal sealed class ManifestDto
             SideBStartTrack = SideBStartTrack,
             Locked = Locked,
         };
-        mix.Appearance.Font = CassetteFont.Parse(Appearance.Font);
+        // A standard Logarktos face this computer's catalog does not list is set
+        // by the family name the package carries, not refused.
+        mix.Appearance.Font = !CassetteFont.TryParse(Appearance.Font, out _) && !string.IsNullOrWhiteSpace(Appearance.FontFamily)
+            ? CassetteFont.FromFamily(Appearance.FontFamily, Appearance.FontScreenFamily)
+            : CassetteFont.Parse(Appearance.Font);
         mix.Appearance.TextColor = HexColor.Parse(Appearance.TextColor ?? "#000000", "textColor");
         mix.Appearance.TapeColor = HexColor.Parse(Appearance.TapeColor ?? "#1E1E22", "tapeColor");
         mix.Appearance.StickerColor = HexColor.Parse(Appearance.StickerColor ?? "#CDBA9E", "stickerColor");
@@ -338,6 +344,8 @@ internal sealed class ManifestDto
 internal sealed class AppearanceDto
 {
     public string? Font { get; set; }
+    public string? FontFamily { get; set; }
+    public string? FontScreenFamily { get; set; }
     public string? TextColor { get; set; }
     public string? TapeColor { get; set; }
     public string? StickerColor { get; set; }

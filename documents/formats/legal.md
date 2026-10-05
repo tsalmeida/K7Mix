@@ -14,7 +14,7 @@ The `.k7m` lock is application behaviour. It is not encryption and not a guarant
 - Keep attribution in the mix, on the insert, and in the game where the licence requires it (Creative Commons BY, many royalty-free libraries).
 - Do not ship a mix marked **Non-Commercial Use Only** with a commercial game unless a separate licence says otherwise.
 - Keep licence documents with the mix. K7 Mix copies them into `licenses/` when asked; stripping them is a choice the author would have to make elsewhere.
-- Title fonts (Cousine, Roboto, Rock Salt, Fixedsys) have their own notices in `src/K7Mix/Assets/TitleFonts/`. Bundling those faces in the app and in a printed insert follows those notices. It does not license the music.
+- Title fonts (Cousine, Roboto, Rock Salt, Fixedsys) have their own notices in `src/K7Mix/Assets/TitleFonts/`. Bundling those faces in the app and in a printed insert follows those notices. The other standard Logarktos fonts are not bundled; each one's licence is beside it in `L:\Library\Environment\Fonts`. It does not license the music.
 - MIDI input is rendered through a bundled synthesizer. That render is a new audio file. The MIDI composition is still under its own licence; the synthesizer does not replace it.
 
 ## Other requirements worth keeping in view
