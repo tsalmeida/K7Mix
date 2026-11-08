@@ -2,7 +2,7 @@
 
 How a video game plays K7 Mix packages, written from the two games that do it: **Running Wild** (*Earthbound Gladiator Rally*, `L:\Library\Coding\C89\RunningWild`) and **Knife and Card** (the Valliberum collections, `L:\Library\Coding\C89\KnifeAndCard`). Read this before adding K7 Mix tapes to a new game. The next game should follow it, not re-derive it.
 
-Written 2026-09-18, when Knife and Card was brought back to its original soundtrack on K7 Mix tapes (see the case study at the end). Everything in this folder is a copy of what that work used:
+Written 2026-09-18, when Knife and Card was brought back to its original soundtrack on K7 Mix tapes (see the case study at the end). Beside this file, on the author's machine, sit copies of what that work used. They belong to the games, which are not released, so they are kept out of the public repository (`.gitignore` lists them) and the paths below resolve only on that machine:
 
 | Folder | What it holds |
 | --- | --- |
@@ -77,9 +77,9 @@ The Walkman is the one music machine, so it is **an object on the game's table**
 - **The cassette's shell colour shows through the window. Its title does not.** The title is read in the close-up.
 - **Art:** `assets/walkman/walkman.png`, cut from `TT-Sony-Walkman-plate.png` by `tools/make_walkman_art.py` (flood-fills the plate's black background from the edges, soft 1 px edge, crop). Keep a procedural fallback so the Walkman can never be missing.
 
-![The Walkman at the top right of the Knife and Card launcher](assets/screenshots/table-launcher.png)
+*Screenshot, kept with the games: The Walkman at the top right of the Knife and Card launcher (`assets/screenshots/table-launcher.png`).*
 
-![The same Walkman in a game, at that game's card size](assets/screenshots/table-in-game.png)
+*Screenshot, kept with the games: The same Walkman in a game, at that game's card size (`assets/screenshots/table-in-game.png`).*
 
 ### 4.2 The close-up: computer-drawn, not the photograph
 
@@ -124,15 +124,15 @@ Scale the whole deck uniformly to the window (Knife and Card: 60% of the width o
 
 **Input in the close-up.** Left click presses a key on release (press and release on the same key). The wheel is volume. Arrows/WASD move the keyboard focus to the nearest key in that direction, Enter presses it, Space is play/pause, E is EJECT. The game's fullscreen keys pass through.
 
-![Memory Challenges' tape in the close-up](assets/screenshots/closeup-memory-challenges.png)
+*Screenshot, kept with the games: Memory Challenges' tape in the close-up (`assets/screenshots/closeup-memory-challenges.png`).*
 
-![Battle Mechanism's tape: Rock Salt on red](assets/screenshots/closeup-battle-mechanism.png)
+*Screenshot, kept with the games: Battle Mechanism's tape: Rock Salt on red (`assets/screenshots/closeup-battle-mechanism.png`).*
 
-![The Mixtape](assets/screenshots/closeup-mixtape.png)
+*Screenshot, kept with the games: The Mixtape (`assets/screenshots/closeup-mixtape.png`).*
 
 Running Wild's own close-up, for comparison (same deck, keys, readout):
 
-![Running Wild](assets/screenshots/running-wild-closeup.png)
+*Screenshot, kept with the games: Running Wild (`assets/screenshots/running-wild-closeup.png`).*
 
 ### 4.3 The keyboard's media keys
 
@@ -143,7 +143,7 @@ Running Wild's own close-up, for comparison (same deck, keys, readout):
 - **Swallow the key-up too**, so no game reacts to it.
 - **Testing:** never post the real media keys to the game window from a script. Windows also routes them to the system volume and to every other media player. Push a synthetic SDL key event through the real event loop instead (Knife and Card: `KAC_SHOT_KEY=AudioNext`).
 
-![The media-key slip](assets/screenshots/media-key-slip.png)
+*Screenshot, kept with the games: The media-key slip (`assets/screenshots/media-key-slip.png`).*
 
 ## 5. Official tapes
 

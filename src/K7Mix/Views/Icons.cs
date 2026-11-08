@@ -1,7 +1,7 @@
 namespace K7Mix.Views;
 
 /// <summary>
-/// Font Awesome 6 Pro Solid glyphs, as the codepoints the webfont stylesheet
+/// Font Awesome 6 Free Solid glyphs (the Free set only: K7 Mix is open source), as the codepoints the webfont stylesheet
 /// gives for each icon name. The face ships in Assets/Icons and is referenced in
 /// XAML through the <c>K7Icons</c> resource; the constants here are for the few
 /// glyphs that have to change at runtime.

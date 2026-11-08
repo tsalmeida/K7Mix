@@ -16,9 +16,12 @@
       </ResourceDictionary.ThemeDictionaries>
       <SolidColorBrush x:Key="TkxAccent" Color="#fe9a00" />
 
-      <!-- Font Awesome 6 Pro Solid, the same kit Eikonotheke catalogues. Buttons
-           wear the glyph; the codepoints are listed by name in Views/Icons.cs. -->
-      <FontFamily x:Key="K7Icons">avares://K7Mix/Assets/Icons#Font Awesome 6 Pro Solid</FontFamily>
+      <!-- Font Awesome 6 Free Solid (font SIL OFL 1.1, icons CC BY 4.0; see
+           Assets/Icons/FontAwesome-LICENSE.txt). K7 Mix is open source, so it
+           carries the Free face, not the Pro kit the private companions use, and
+           every glyph must exist in the Free set. Buttons wear the glyph; the
+           codepoints are listed by name in Views/Icons.cs. -->
+      <FontFamily x:Key="K7Icons">avares://K7Mix/Assets/Icons#Font Awesome 6 Free Solid</FontFamily>
     </ResourceDictionary>
   </Application.Resources>
 

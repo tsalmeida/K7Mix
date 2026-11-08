@@ -37,3 +37,8 @@ K7Mix.log
 
 # ---- Local editor / workspace settings ----
 logarktos.lua
+
+# ---- The games' own material (unreleased): kept locally beside K7Mix-in-games.md ----
+/documents/game-integration/assets/
+/documents/game-integration/reference/
+/documents/game-integration/tools/
