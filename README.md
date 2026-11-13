@@ -85,7 +85,7 @@ dotnet test  K7Mix.slnx -c Release
 dotnet publish src\K7Mix\K7Mix.csproj -c Release -r win-x64 --self-contained true -o publish
 ```
 
-Requirements: [.NET 9 SDK](https://dotnet.microsoft.com/download). Encoding packaged audio needs `ffmpeg` with libvorbis on `PATH`. Printing the insert needs `typst` on `PATH`.
+Requirements: [.NET 9 SDK](https://dotnet.microsoft.com/download). Encoding packaged audio needs `ffmpeg` with libvorbis on `PATH`. Printing the insert needs `typst` on `PATH`. On the author's machine the build also picks up CompanionKit, the family's private UI kit, when it sits beside the repository, and the Description box then takes Vim motions; without it the box is a plain text box and nothing else changes.
 
 ---
 

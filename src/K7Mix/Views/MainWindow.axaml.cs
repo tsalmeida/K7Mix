@@ -62,6 +62,9 @@ public partial class MainWindow : Window
     public MainWindow(string?[] args)
     {
         InitializeComponent();
+#if COMPANIONKIT
+        Tekhnexos.CompanionKit.Vim.SetEnable(DescriptionBox, true);
+#endif
         VersionText.Text = $"v{Brand.Version}";
         FontBox.ItemsSource = CassetteFont.All.Select(f => f.DisplayName).ToList();
         TransitionKindBox.ItemsSource = new[] { "none", "crossfade", "fadeout", "silence" };

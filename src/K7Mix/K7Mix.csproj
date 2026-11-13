@@ -43,4 +43,16 @@
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.0" />
     <PackageReference Include="Avalonia.Skia" Version="11.3.0" />
   </ItemGroup>
+
+  <!-- CompanionKit is the Tekhnexos family's shared UI kit (Vim motions in prose
+       boxes, action rows). It is not published, so K7 Mix uses it only when it
+       sits beside this repository; a plain clone builds without it. -->
+  <PropertyGroup>
+    <CompanionKitProject>$(MSBuildThisFileDirectory)..\..\..\CompanionKit\CompanionKit.csproj</CompanionKitProject>
+    <DefineConstants Condition="Exists('$(CompanionKitProject)')">$(DefineConstants);COMPANIONKIT</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition="Exists('$(CompanionKitProject)')">
+    <ProjectReference Include="$(CompanionKitProject)" />
+  </ItemGroup>
 </Project>
