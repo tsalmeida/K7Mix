@@ -95,6 +95,8 @@ Write the field with one small `UPDATE` of `longtext_3`, commit immediately, and
 
 After editing, stamp **Last rewritten** at the top (the date, and the one-line reason).
 
+*include_attachment* "L:/Vault/Documents/Others/Every-prompt.md"
+
 ## After the work
 
 When you have implemented the requested changes, write a brief report of what was done into Autarktos (`L:\Library\Coding\project-ai-prompts_package.sqlite`), in `longtext_2` of the entry this prompt came from. The commit message is fine as that report.
